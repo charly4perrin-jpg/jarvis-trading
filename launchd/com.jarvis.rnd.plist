@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.jarvis.rnd</string>
+  <key>WorkingDirectory</key><string>__REPO__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string><string>-lc</string>
+    <string>/usr/bin/caffeinate -i .venv/bin/python -m rnd.loop</string>
+  </array>
+  <!-- Chaque nuit à 03:15, loin de la décision de 01:00 -->
+  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>3</integer><key>Minute</key><integer>15</integer></dict>
+  <key>StandardOutPath</key><string>__REPO__/rnd/state/launchd.out.log</string>
+  <key>StandardErrorPath</key><string>__REPO__/rnd/state/launchd.err.log</string>
+  <key>RunAtLoad</key><false/>
+</dict>
+</plist>

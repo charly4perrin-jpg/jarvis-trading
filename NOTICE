@@ -1,0 +1,8 @@
+Jarvis — système de trading crypto multi-agents en argent fictif
+Copyright 2026 Charly Perrin
+
+Ce produit est distribué sous licence Apache 2.0 (voir LICENSE).
+
+Il inclut TradingView Lightweight Charts (https://github.com/tradingview/lightweight-charts),
+Copyright TradingView, Inc., sous licence Apache 2.0 :
+trading_agent/web/vendor/LICENSE-lightweight-charts.txt

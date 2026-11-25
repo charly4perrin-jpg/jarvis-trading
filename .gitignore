@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.env
+data/
+.DS_Store
+
+# Bibliothèque GitHub : données volumineuses et copies de référence hors git
+bibliotheque_github/*.sqlite
+bibliotheque_github/*.csv
+reference_code/
+rnd/state/
+
+# Brouillons LinkedIn (actu hebdo)
+communication/
+demo/site/snapshot.json

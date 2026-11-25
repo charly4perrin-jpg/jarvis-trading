@@ -1,0 +1,125 @@
+{
+ "interventions": {
+  "refus_plafond": 52,
+  "reductions": 6,
+  "refus_qui_auraient_ete_acceptes_sans_plafond": 52,
+  "detail_reductions": [
+   {
+    "day": "2023-06-21",
+    "symbol": "ETH/EUR",
+    "requested": 0.12116063248908718,
+    "granted": 0.039261984282504714
+   },
+   {
+    "day": "2025-07-14",
+    "symbol": "XRP/EUR",
+    "requested": 80.4985917328055,
+    "granted": 28.739584100301133
+   },
+   {
+    "day": "2025-07-19",
+    "symbol": "LTC/EUR",
+    "requested": 2.0630790760175235,
+    "granted": 1.2692656230914237
+   },
+   {
+    "day": "2025-07-21",
+    "symbol": "SOL/EUR",
+    "requested": 1.3211499723352536,
+    "granted": 1.077115993519894
+   },
+   {
+    "day": "2025-08-13",
+    "symbol": "ADA/EUR",
+    "requested": 225.99890093519082,
+    "granted": 118.24407905486001
+   },
+   {
+    "day": "2026-09-28",
+    "symbol": "LINK/EUR",
+    "requested": 13.06130277203168,
+    "granted": 7.987165593129854
+   }
+  ],
+  "autres_refus": [
+   "Maximum open positions reached."
+  ],
+  "decisions": 155
+ },
+ "rejeux": {
+  "courant_plafond": {
+   "return": 0.4062,
+   "max_drawdown": 0.1388,
+   "trades": 95,
+   "expectancy": 12.83,
+   "windows": [
+    0.0,
+    -0.0384,
+    0.1393,
+    0.3119,
+    -0.0439,
+    0.0233
+   ],
+   "refusals": {
+    "régime": 84,
+    "Correlated risk limit reached.": 52,
+    "Maximum open positions reached.": 8
+   }
+  },
+  "courant_sans_plafond": {
+   "return": 0.2388,
+   "max_drawdown": 0.1388,
+   "trades": 116,
+   "expectancy": 6.17,
+   "windows": [
+    0.0,
+    -0.0504,
+    0.1423,
+    0.1731,
+    -0.0589,
+    0.0344
+   ],
+   "refusals": {
+    "régime": 83,
+    "Maximum open positions reached.": 29
+   }
+  },
+  "initial_plafond": {
+   "return": 0.3839,
+   "max_drawdown": 0.1149,
+   "trades": 96,
+   "expectancy": 12.0,
+   "windows": [
+    0.0,
+    -0.0381,
+    0.1415,
+    0.2788,
+    -0.0327,
+    0.019
+   ],
+   "refusals": {
+    "régime": 84,
+    "Correlated risk limit reached.": 49,
+    "Maximum open positions reached.": 9
+   }
+  },
+  "initial_sans_plafond": {
+   "return": 0.2402,
+   "max_drawdown": 0.119,
+   "trades": 116,
+   "expectancy": 6.21,
+   "windows": [
+    0.0,
+    -0.0509,
+    0.1461,
+    0.164,
+    -0.0476,
+    0.0284
+   ],
+   "refusals": {
+    "régime": 83,
+    "Maximum open positions reached.": 29
+   }
+  }
+ }
+}

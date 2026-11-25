@@ -1,0 +1,199 @@
+{
+ "_lisez_moi": "Dates recopiées à la main depuis les pages officielles (lien 'source' de chaque ligne). Mettre à jour avant la date 'couvert_jusqu_au'. Heures locales du fuseau indiqué.",
+ "mis_a_jour_le": "2026-11-18",
+ "couvert_jusqu_au": "2027-06-10",
+ "evenements": [
+  {
+   "date": "2026-12-04",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Emploi américain (rapport mensuel)",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm"
+  },
+  {
+   "date": "2026-12-09",
+   "heure": "14:00",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Décision de taux de la Fed (FOMC)",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "date": "2026-12-10",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Inflation américaine (CPI)",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm"
+  },
+  {
+   "date": "2026-12-17",
+   "heure": "14:15",
+   "fuseau": "Europe/Berlin",
+   "zone": "Zone euro",
+   "nom": "Décision de taux de la BCE",
+   "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"
+  },
+  {
+   "date": "2027-01-08",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Emploi américain (rapport mensuel)",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm"
+  },
+  {
+   "date": "2027-01-13",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Inflation américaine (CPI)",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm"
+  },
+  {
+   "date": "2027-01-27",
+   "heure": "14:00",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Décision de taux de la Fed (FOMC)",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "date": "2027-02-04",
+   "heure": "14:15",
+   "fuseau": "Europe/Berlin",
+   "zone": "Zone euro",
+   "nom": "Décision de taux de la BCE",
+   "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"
+  },
+  {
+   "date": "2027-02-05",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Emploi américain (rapport mensuel)",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm"
+  },
+  {
+   "date": "2027-02-11",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Inflation américaine (CPI)",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm"
+  },
+  {
+   "date": "2027-03-05",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Emploi américain (rapport mensuel)",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm"
+  },
+  {
+   "date": "2027-03-10",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Inflation américaine (CPI)",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm"
+  },
+  {
+   "date": "2027-03-17",
+   "heure": "14:00",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Décision de taux de la Fed (FOMC)",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "date": "2027-03-18",
+   "heure": "14:15",
+   "fuseau": "Europe/Berlin",
+   "zone": "Zone euro",
+   "nom": "Décision de taux de la BCE",
+   "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"
+  },
+  {
+   "date": "2027-04-02",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Emploi américain (rapport mensuel)",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm"
+  },
+  {
+   "date": "2027-04-13",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Inflation américaine (CPI)",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm"
+  },
+  {
+   "date": "2027-04-28",
+   "heure": "14:00",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Décision de taux de la Fed (FOMC)",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "date": "2027-04-29",
+   "heure": "14:15",
+   "fuseau": "Europe/Berlin",
+   "zone": "Zone euro",
+   "nom": "Décision de taux de la BCE",
+   "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"
+  },
+  {
+   "date": "2027-05-07",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Emploi américain (rapport mensuel)",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm"
+  },
+  {
+   "date": "2027-05-12",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Inflation américaine (CPI)",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm"
+  },
+  {
+   "date": "2027-06-04",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Emploi américain (rapport mensuel)",
+   "source": "https://www.bls.gov/schedule/news_release/empsit.htm"
+  },
+  {
+   "date": "2027-06-09",
+   "heure": "14:00",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Décision de taux de la Fed (FOMC)",
+   "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  {
+   "date": "2027-06-10",
+   "heure": "08:30",
+   "fuseau": "America/New_York",
+   "zone": "États-Unis",
+   "nom": "Inflation américaine (CPI)",
+   "source": "https://www.bls.gov/schedule/news_release/cpi.htm"
+  },
+  {
+   "date": "2027-06-10",
+   "heure": "14:15",
+   "fuseau": "Europe/Berlin",
+   "zone": "Zone euro",
+   "nom": "Décision de taux de la BCE",
+   "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"
+  }
+ ]
+}

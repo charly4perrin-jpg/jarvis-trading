@@ -1,0 +1,174 @@
+{
+ "_doc": "Configuration de la boucle R&D de Jarvis. Les chemins protégés ne peuvent JAMAIS être modifiés par les agents : le garde-fou (sans IA) refuse la branche.",
+ "repo": "~/Projects/jarvis-trading",
+ "python": ".venv/bin/python",
+ "worktrees_dir": "~/Projects/jarvis-rnd-worktrees",
+ "max_cycles_par_nuit": 3,
+ "timeout_agent_s": 2700,
+ "modele": "opus",
+ "redemarrer_apres_fusion": true,
+ "commande_redemarrage": "launchctl kickstart -k gui/$(id -u)/com.jarvis.trading",
+ "commandes_tests": [
+  ".venv/bin/python -m pytest -q",
+  ".venv/bin/python -m trading_agent scenarios"
+ ],
+ "limites": {
+  "fichiers_max": 25,
+  "lignes_max": 900
+ },
+ "chemins_proteges": [
+  "rnd/**",
+  ".claude/**",
+  "launchd/**",
+  "**/*.plist",
+  ".gitignore",
+  "trading_agent/risk.py",
+  "trading_agent/agents.py",
+  "trading_agent/events.py",
+  "trading_agent/store.py",
+  "trading_agent/adversarial.py",
+  "trading_agent/resilience.py",
+  "trading_agent/audit.py",
+  "trading_agent/config.py",
+  "trading_agent/server.py",
+  "trading_agent/ai.py",
+  "trading_agent/notifications.py",
+  "trading_agent/exchanges.py",
+  "trading_agent/__main__.py",
+  "tests/conftest.py",
+  "tests/test_risk*.py",
+  "tests/test_safety_properties.py",
+  "tests/test_protections.py",
+  "tests/test_rnd*.py",
+  "tests/test_store.py",
+  "tests/test_ai.py",
+  "trading_agent/scenarios.py",
+  "**/live*",
+  "**/real_trading*",
+  "**/*risk*",
+  "**/*risque*",
+  "**/*secur*",
+  "**/*kill*",
+  "**/*halt*",
+  "config/**",
+  "**/*.toml",
+  "**/*.yaml",
+  "**/*.yml",
+  "**/.env*",
+  "requirements*.txt",
+  "pyproject.toml",
+  "setup.py",
+  "setup.cfg",
+  "uv.lock",
+  "data/**",
+  "**/*.sqlite",
+  "**/*.db",
+  "**/*.jsonl",
+  "reference_code/**",
+  "bibliotheque_github/**",
+  ".venv*",
+  "**/.venv*",
+  "demo/**",
+  "publication/**",
+  "LICENSE",
+  "NOTICE",
+  "AVERTISSEMENT.md",
+  "SECURITY.md",
+  "tests/test_demo_snapshot.py"
+ ],
+ "motifs_interdits": [
+  [
+   "create_order\\s*\\(",
+   "appel d'ordre réel (create_order) ajouté"
+  ],
+  [
+   "privatePost|privateGet|private_post|private_get",
+   "endpoint privé d'une plateforme"
+  ],
+  [
+   "apiKey|api_key|secret\\s*=|SECRET_KEY|password\\s*=",
+   "clé API ou secret"
+  ],
+  [
+   "-----BEGIN [A-Z ]*PRIVATE KEY",
+   "clé privée"
+  ],
+  [
+   "\\b(sk|xai)-[A-Za-z0-9]{20,}",
+   "jeton d'API"
+  ],
+  [
+   "(import|from)\\s+reference_code|reference_code[/\\.]",
+   "import direct de reference_code (copie interdite)"
+  ],
+  [
+   "\\bmode\\s*=\\s*['\"](live|real|reel)['\"]",
+   "passage en mode réel"
+  ],
+  [
+   "os\\.system|shell\\s*=\\s*True|eval\\(|exec\\(",
+   "exécution de code dynamique"
+  ],
+  [
+   "rm\\s+-rf|shutil\\.rmtree",
+   "suppression récursive"
+  ]
+ ],
+ "fusion_automatique": false,
+ "_doc_fusion": "false : une amélioration acceptée attend sur sa branche rnd/<id> que tu la fusionnes (python -m rnd.loop --fusionner <id>). true : fusion automatique la nuit.",
+ "fichiers_interdits": [
+  [
+   "**/conftest.py",
+   "nouveau conftest (peut modifier tous les tests)"
+  ],
+  [
+   "**/sitecustomize.py",
+   "code exécuté au démarrage de Python"
+  ],
+  [
+   "**/usercustomize.py",
+   "code exécuté au démarrage de Python"
+  ],
+  [
+   "**/*.pth",
+   "fichier .pth (code exécuté au démarrage de Python)"
+  ]
+ ],
+ "motifs_interdits_hors_tests": [
+  [
+   "\\b(urllib|requests|httpx|aiohttp|socket|smtplib|ftplib|websockets?|http\\.client)\\b",
+   "accès réseau ajouté"
+  ],
+  [
+   "\\bsubprocess\\b|\\bos\\.popen\\b|\\bpty\\b",
+   "lancement de programme ajouté"
+  ],
+  [
+   "os\\.environ|getenv\\(|\\.env\\b|dotenv",
+   "lecture de l'environnement ou du fichier .env"
+  ],
+  [
+   "setattr\\(|monkeypatch|importlib|__import__|sys\\.modules",
+   "modification dynamique de code (contournement possible)"
+  ],
+  [
+   "\\b(RiskManager|RiskAgent|ExecutionAgent|SecurityMonitor|EventBus|PERMISSIONS)\\b\\s*(\\.\\s*\\w+\\s*)?=(?!=)",
+   "réaffectation d'un élément de sécurité"
+  ],
+  [
+   "\\b(open|Path)\\([^)]*(data/|\\.env|events\\.jsonl|jarvis\\.db|paper_state|HALT)",
+   "accès direct aux données de l'essai"
+  ]
+ ],
+ "outils_interdits": [
+  "WebFetch",
+  "WebSearch",
+  "Read(~/Projects/jarvis-trading/.env)",
+  "Read(~/Projects/jarvis-trading/.env.*)",
+  "Read(**/.env)",
+  "Read(**/.env.*)",
+  "Read(~/.ssh/**)",
+  "Read(~/Library/**)",
+  "Read(~/.claude/**)"
+ ]
+}

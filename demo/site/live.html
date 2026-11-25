@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jarvis en direct</title>
+<meta name="description" content="Jarvis : 18 agents IA qui tradent la crypto en argent fictif. Démo publique en lecture seule.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Mise en page : bandeau d'état, tableau de bord en grille, fil de décision façon messagerie entre agents */
+:root{--bg:#f4f6f8;--panel:#fff;--fg:#141b24;--muted:#5c6776;--line:#dde2e8;--accent:#0a6b72;--accent-soft:#e2f0f0;--up:#1d7a46;--down:#b4392f;--warn:#9a5a00;--warn-soft:#fbf0dc;
+--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#0f141a;--panel:#151c24;--fg:#e3e8ee;--muted:#93a0af;--line:#25303b;--accent:#4dbec4;--accent-soft:#143338;--up:#5cc58a;--down:#ec7d72;--warn:#e7b25a;--warn-soft:#382a12;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.55 var(--sans)}
+.wrap{max-width:1120px;margin:0 auto;padding:28px max(16px,env(safe-area-inset-left)) 56px}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:18px}
+h1{font-size:30px;font-weight:600;margin:0;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:4px 0 0;max-width:62ch}
+.live{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.live b{color:var(--fg);font-weight:500}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--up);margin-right:6px;vertical-align:1px}
+.dot.stale{background:var(--warn)}
+.warn{margin:16px 0 0;background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:8px 12px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;min-width:0}
+.c4{grid-column:span 4}.c6{grid-column:span 6}.c8{grid-column:span 8}.c12{grid-column:span 12}
+@media(max-width:860px){.c4,.c6,.c8{grid-column:span 12}.live{text-align:left}}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin:0 0 12px}
+.big{font-family:var(--mono);font-size:26px;font-weight:500;font-variant-numeric:tabular-nums}
+.row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px dashed var(--line);font-variant-numeric:tabular-nums}
+.row:last-child{border-bottom:0}
+.k{color:var(--muted)}.v{font-family:var(--mono)}
+.up{color:var(--up)}.down{color:var(--down)}
+.pill{font-size:11.5px;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.pill.haussier{background:color-mix(in srgb,var(--up) 15%,transparent);color:var(--up)}
+.pill.baissier{background:color-mix(in srgb,var(--down) 15%,transparent);color:var(--down)}
+.bar{display:grid;grid-template-columns:110px 1fr 44px;gap:10px;align-items:center;padding:3px 0;font-size:13px}
+.bar i{display:block;height:8px;border-radius:4px;background:var(--accent);opacity:.8}
+.bar span:last-child{font-family:var(--mono);text-align:right;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px}
+.stat .n{font-family:var(--mono);font-size:22px}.stat .l{color:var(--muted);font-size:12px}
+.feed{display:flex;flex-direction:column;gap:10px;max-height:640px;overflow:auto;padding-right:4px}
+.msg{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:10px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+.msg .who{font-weight:600;font-size:13px;white-space:nowrap}
+.msg .who small{font-weight:400;color:var(--muted)}
+.msg time{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:right}
+.msg p{grid-column:1/-1;margin:0;overflow-wrap:anywhere}
+.msg.alert{border-color:var(--warn)}
+footer{margin-top:28px;color:var(--muted);font-size:12.5px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
+footer code{font-family:var(--mono)}
+a{color:var(--accent)}
+.empty{color:var(--muted);font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div>
+  <h1>Jarvis en direct</h1>
+  <p class="sub">18 agents IA analysent les marchés crypto, se contredisent et décident ensemble. Tout est simulé en argent fictif sur de vraies données de marché. Chaque décision est journalisée et vérifiable.</p>
+ </div>
+ <div class="live" id="live">Chargement…</div>
+</header>
+<p class="warn">Projet personnel en argent fictif (paper trading). Aucun ordre réel. Ce n'est pas un conseil en investissement.</p>
+
+<div class="grid">
+ <section class="card c8"><h2>Portefeuilles fictifs</h2><div id="pf" class="stats"></div><p id="shadow" class="k" style="margin:12px 0 0;font-size:13px"></p></section>
+ <section class="card c4"><h2>Cette semaine</h2><div id="week" class="stats"></div></section>
+ <section class="card c6"><h2>Régime de chaque marché</h2><div id="reg"></div></section>
+ <section class="card c6"><h2>Activité des agents (24 h)</h2><div id="act"></div></section>
+ <section class="card c12"><h2>Fil de décision : les agents se parlent</h2><div id="feed" class="feed"></div></section>
+</div>
+
+<footer>
+ <span>Journal chaîné SHA-256 : <code id="hash">—</code> · <span id="nev">—</span> événements</span>
+ <span><a href="https://github.com/__GITHUB_REPO__" rel="noopener">Code source (Apache-2.0)</a></span>
+</footer>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const eur=n=>n==null?"—":n.toLocaleString("fr-FR",{style:"currency",currency:"EUR"});
+const pct=n=>n==null?"—":(n>0?"+":"")+(n*100).toFixed(2).replace(".",",")+" %";
+const ago=iso=>{const m=Math.round((Date.now()-new Date(iso+"Z"))/60000);return m<60?`il y a ${m} min`:m<1440?`il y a ${Math.round(m/60)} h`:`il y a ${Math.round(m/1440)} j`};
+function render(s){
+ const stale=(Date.now()-new Date(s.genere_le))>3*3600e3;
+ $("#live").innerHTML=`<span class="dot ${stale?"stale":""}"></span>Mis à jour <b>${ago(s.genere_le.slice(0,19))}</b><br>Dernière décision : ${ago(s.dernier_evenement)}`;
+ $("#pf").innerHTML=s.portefeuilles.map(p=>`<div class="stat"><div class="l">${esc(p.plateforme)} · départ ${eur(p.depart)}</div><div class="big">${eur(p.capital)}</div><div class="${p.rendement_net>0?"up":p.rendement_net<0?"down":"k"}">${pct(p.rendement_net)}</div><div class="k" style="font-size:12px">${p.trades??0} trade(s) · frais ${eur(p.frais)} · perte max ${pct(-(p.perte_max||0))}</div></div>`).join("")||'<p class="empty">Pas encore de bilan.</p>';
+ $("#shadow").textContent=(s.shadow.split("Shadow :")[1]||"").trim()?"Référence « acheter et garder » : "+s.shadow.split("Shadow :")[1].trim():"";
+ const w=s.semaine;
+ $("#week").innerHTML=[["Cycles",w.cycles],["Signaux",w.signaux],["Propositions",w.propositions],["Exécutions",w.executions],["Arrêts d'urgence",w.arrets_urgence],["Refus",Object.values(w.refus_par_agent).reduce((a,b)=>a+b,0)]].map(([l,n])=>`<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join("");
+ $("#reg").innerHTML=Object.entries(s.regimes).map(([k,r])=>`<div class="row"><span>${esc(k)}</span><span><span class="pill ${esc(r.tendance)}">${esc(r.tendance)}</span> <span class="k" style="font-size:12px">vol. ${esc(r.volatilite)}${r.choc?" · choc":""}</span></span></div>`).join("")||'<p class="empty">—</p>';
+ const a=Object.entries(s.activite_24h),mx=Math.max(1,...a.map(x=>x[1]));
+ $("#act").innerHTML=a.map(([k,n])=>`<div class="bar"><span>${esc(k)}</span><i style="width:${(n/mx*100).toFixed(1)}%"></i><span>${n}</span></div>`).join("")||'<p class="empty">Aucune activité.</p>';
+ $("#feed").innerHTML=s.fil.slice().reverse().map(m=>`<div class="msg ${/halt|rejected|degradation/.test(m.type)?"alert":""}"><span class="who">${esc(m.de)}${m.vers?` <small>→ ${esc(m.vers)}</small>`:""}</span><time>${esc(m.le.replace("T"," "))} UTC</time><p>${esc(m.message)}</p></div>`).join("");
+ $("#hash").textContent=s.journal.empreinte_finale+"…";$("#nev").textContent=s.journal.evenements.toLocaleString("fr-FR");
+}
+fetch("snapshot.json",{cache:"no-store"}).then(r=>r.json()).then(render).catch(()=>{$("#live").textContent="Instantané indisponible."});
+</script>
+</body>
+</html>

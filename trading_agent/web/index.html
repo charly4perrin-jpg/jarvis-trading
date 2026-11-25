@@ -1,0 +1,1801 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jarvis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --fond: #1c1b29;
+  --plan: #262437;
+  --plan-haut: #302d45;
+  --trait: #45425e;
+  --texte: #efe9dc;
+  --doux: #a9a3b8;
+  --lampe: #f4b942;
+  --ok: #63d2a8;
+  --non: #f2755f;
+  --sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --serif: "Newsreader", Georgia, serif;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--fond); color: var(--texte);
+  font: 400 15px/1.45 var(--sans);
+  display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr);
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--lampe); outline-offset: 2px; }
+
+/* ---------- barre du haut ---------- */
+header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 28px;
+  padding: 14px 24px; border-bottom: 1px solid var(--trait);
+}
+.nom { font: 500 26px/1 var(--serif); letter-spacing: -0.01em; margin: 0; }
+.marche { color: var(--doux); }
+.chiffres { display: flex; flex-wrap: wrap; gap: 6px 26px; margin: 0; }
+.chiffres div { display: flex; gap: 8px; align-items: baseline; }
+.chiffres dt { color: var(--doux); font-size: 13px; }
+.chiffres dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.gain { color: var(--ok); } .perte { color: var(--non); }
+.actions { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.etat { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--doux); }
+.etat i { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); }
+.etat.arret i { background: var(--non); } .etat.arret { color: var(--non); }
+.btn {
+  padding: 8px 14px; border-radius: 999px; border: 1px solid var(--trait);
+  background: transparent;
+}
+.btn:hover { background: var(--plan-haut); }
+.btn.fort { background: var(--lampe); border-color: var(--lampe); color: #2a2110; font-weight: 600; }
+.btn.fort:hover { background: #ffc955; }
+.btn.danger { border-color: var(--non); color: var(--non); }
+.btn.danger:hover { background: rgba(242,117,95,.14); }
+.btn[disabled] { opacity: .45; cursor: default; }
+
+/* ---------- corps ---------- */
+main { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(340px, 1fr); min-height: 0; }
+.carte { position: relative; min-height: 0; display: flex; flex-direction: column; padding: 8px 12px 14px 24px; }
+.carte svg { flex: 1; width: 100%; min-height: 320px; }
+.legende { display: flex; flex-wrap: wrap; gap: 6px 22px; color: var(--doux); font-size: 13px; margin: 0; padding: 0 0 0 4px; list-style: none; }
+.legende li { display: flex; align-items: center; gap: 8px; }
+.legende svg { flex: none; width: 34px; height: 10px; min-height: 0; }
+.note { color: var(--doux); font-size: 13px; margin: 8px 0 0 4px; max-width: 70ch; }
+
+.lien { fill: none; stroke: var(--trait); stroke-width: 1.5; stroke-dasharray: 3 6; }
+.lien.utilise { stroke: #7d78a0; stroke-dasharray: none; }
+.lien.choisi { stroke: var(--lampe); stroke-width: 2.5; }
+.lien.passe { stroke: var(--lampe); }
+.zone { fill: none; stroke: transparent; stroke-width: 18; cursor: pointer; }
+.noeud { cursor: pointer; }
+.noeud circle.corps { fill: none; stroke: transparent; stroke-width: 2.5; transition: stroke .2s; }
+.noeud text { fill: var(--texte); font: 500 14px var(--sans); text-anchor: middle; }
+.noeud text.sous { fill: var(--doux); font-size: 12px; font-weight: 400; }
+.noeud.active circle.corps, .noeud.recoit circle.corps, .noeud.parle circle.corps { stroke: var(--lampe); }
+.noeud.error circle.corps { stroke: var(--non); }
+.noeud.stopped circle.corps { stroke-dasharray: 4 4; opacity: .6; }
+.noeud.choisi circle.corps { stroke-width: 3; stroke: var(--lampe); }
+.noeud circle.halo { fill: none; stroke: var(--lampe); stroke-width: 2; opacity: 0; }
+.noeud.recoit circle.halo { animation: halo .7s ease-out; }
+@keyframes halo { from { r: 28; opacity: .9; } to { r: 48; opacity: 0; } }
+#bulle { opacity: 0; pointer-events: none; filter: drop-shadow(0 4px 10px rgba(0,0,0,.45)); }
+#bulle rect, #bulle path { fill: var(--lampe); }
+#bulle text { fill: #2a2110; font: 600 12px var(--sans); text-anchor: middle; }
+#bulle.non rect, #bulle.non path { fill: var(--non); }
+#bulle.non text { fill: #2a1210; }
+.noeud .ombre { fill: rgba(0,0,0,.35); }
+.noeud .perso { transform-box: fill-box; transform-origin: 50% 100%; transition: filter .2s; }
+.noeud.recoit .perso { animation: rebond .55s cubic-bezier(.3,1.6,.5,1); }
+.noeud.parle .perso { animation: parle .45s ease-out; }
+@keyframes rebond { 0% { transform: scale(1); } 35% { transform: scale(1.14, .94); } 70% { transform: scale(.97, 1.05); } 100% { transform: scale(1); } }
+@keyframes parle { 0% { transform: translateY(0); } 40% { transform: translateY(-4px); } 100% { transform: translateY(0); } }
+.noeud.error .perso { filter: saturate(.25) brightness(.8); }
+.noeud.stopped .perso { filter: grayscale(1); opacity: .55; }
+.noeud .pastilleN { fill: var(--fond); stroke: var(--trait); stroke-width: 1.2; }
+.noeud text.sous { font-size: 10.5px; font-weight: 600; fill: var(--texte); }
+
+/* ---------- panneau de droite ---------- */
+aside { border-left: 1px solid var(--trait); background: var(--plan); display: grid; grid-template-rows: minmax(0, 1fr) auto; min-height: 0; }
+.recit { overflow: auto; padding: 20px 24px 12px; }
+.recit h2 { font: 500 22px/1.2 var(--serif); margin: 0 0 4px; }
+.recit .meta { color: var(--doux); font-size: 13px; margin: 0 0 16px; }
+.retour { background: none; border: 0; padding: 0; color: var(--lampe); margin-bottom: 12px; }
+.etapes { list-style: none; margin: 0; padding: 0; counter-reset: etape; }
+.etapes li {
+  counter-increment: etape; position: relative; padding: 0 0 16px 38px;
+  border-left: 1px solid var(--trait); margin-left: 13px;
+}
+.etapes li:last-child { border-left-color: transparent; }
+.etapes li::before {
+  content: counter(etape); position: absolute; left: -14px; top: -2px;
+  width: 27px; height: 27px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--plan); border: 1.5px solid #7d78a0; font-size: 12px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.etapes li.rejected::before { border-color: var(--non); color: var(--non); }
+.etapes li.error::before { border-color: var(--non); background: var(--non); color: #2a1210; }
+.etapes li.encours::before { border-color: var(--lampe); background: var(--lampe); color: #2a2110; }
+.etapes li::before { display: none; }
+.etapes li .avatar { position: absolute; left: -16px; top: -4px; border-radius: 50%; box-shadow: 0 0 0 2px var(--fond), 0 0 0 3.5px #4a4664; }
+.etapes li.rejected .avatar, .etapes li.error .avatar { box-shadow: 0 0 0 2px var(--fond), 0 0 0 3.5px var(--non); }
+.etapes li.encours .avatar { box-shadow: 0 0 0 2px var(--fond), 0 0 0 3.5px var(--lampe), 0 0 14px rgba(244,185,66,.5); }
+.etapes .qui .vers { display: inline-flex; align-items: center; gap: 5px; }
+.etapes .qui .mini { border-radius: 50%; vertical-align: middle; }
+.etapes .qui .mot { padding: 0 8px; border-radius: 999px; background: rgba(244,185,66,.14); color: var(--lampe); font-size: 12px; font-weight: 600; }
+.etapes .qui .mot.non { background: rgba(242,117,95,.16); color: var(--non); }
+.etapes .qui { font-size: 13px; color: var(--doux); display: flex; gap: 8px; flex-wrap: wrap; }
+.etapes .qui b { color: var(--texte); font-weight: 600; }
+.etapes .dit { font: 400 17px/1.4 var(--serif); margin: 2px 0 0; max-width: 46ch; }
+.etapes li.rejected .dit, .etapes li.error .dit { color: #ffb4a6; }
+.etapes li.attente { opacity: .35; }
+.fiche { margin: 0 0 18px; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 14px; }
+.fiche dt { color: var(--doux); } .fiche dd { margin: 0; }
+.vide { color: var(--doux); font: 400 17px/1.45 var(--serif); max-width: 40ch; }
+
+.fils { border-top: 1px solid var(--trait); padding: 12px 24px 16px; max-height: 34vh; overflow: auto; }
+.fils h3 { font: 600 14px var(--sans); margin: 0 0 8px; color: var(--doux); }
+.fils ul { list-style: none; margin: 0; padding: 0; }
+.fils button {
+  width: 100%; text-align: left; background: none; border: 0; border-radius: 8px;
+  padding: 6px 8px; display: grid; grid-template-columns: 62px 1fr; gap: 10px; align-items: baseline;
+}
+.fils button:hover { background: var(--plan-haut); }
+.fils button.choisi { background: var(--plan-haut); box-shadow: inset 2px 0 0 var(--lampe); }
+.fils time { color: var(--doux); font-size: 13px; font-variant-numeric: tabular-nums; }
+.fils .rejected, .fils .error { color: #ffb4a6; }
+
+/* ---------- parcours de validation ---------- */
+.etapesStatut { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 10px; padding: 0; list-style: none; font-size: 13px; }
+.etapesStatut li { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--trait); color: var(--doux); }
+.etapesStatut li.fait { border-color: var(--ok); color: var(--ok); }
+.etapesStatut li.ici { background: var(--plan-haut); color: var(--texte); font-weight: 600; }
+.carteStrat { border-top: 1px solid var(--trait); padding: 16px 0; }
+.carteStrat h3 { font: 500 19px var(--serif); margin: 0; display: flex; align-items: center; }
+.criteres { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 4px; font-size: 14px; }
+.criteres li { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: baseline; }
+.criteres .v { font-variant-numeric: tabular-nums; color: var(--doux); }
+.criteres .oui { color: var(--ok); font-weight: 600; } .criteres .non { color: var(--non); font-weight: 600; }
+.regimes { margin: 0 0 10px; font-size: 13px; }
+.regimes summary { cursor: pointer; color: var(--doux); }
+.regimes table { border-collapse: collapse; margin-top: 6px; width: 100%; font-variant-numeric: tabular-nums; }
+.regimes th, .regimes td { text-align: right; padding: 3px 8px; border-bottom: 1px solid rgba(255,255,255,.06); }
+.regimes th:first-child, .regimes td:first-child, .regimes td:last-child { text-align: left; }
+.regimes th { font-weight: 500; color: var(--doux); }
+.fenetres { font-size: 13px; color: var(--doux); margin: 0 0 10px; font-variant-numeric: tabular-nums; }
+.carteStrat .action { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 14px; color: var(--doux); }
+
+/* ---------- alertes ---------- */
+.alertes { position: relative; }
+.alertes summary { list-style: none; display: flex; align-items: center; gap: 8px; }
+.alertes summary::-webkit-details-marker { display: none; }
+.alertes summary b { background: var(--lampe); color: #2a2110; border-radius: 999px; padding: 0 7px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.alertes ul {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 5; width: min(400px, 88vw); max-height: 62vh; overflow: auto;
+  margin: 0; padding: 6px; list-style: none; background: var(--plan-haut); border: 1px solid var(--trait); border-radius: 12px;
+}
+.alertes li button { width: 100%; text-align: left; background: none; border: 0; border-radius: 8px; padding: 9px 10px; display: grid; gap: 2px; }
+.alertes li button:hover { background: var(--plan); }
+.alertes li b { font-weight: 600; }
+.alertes li.nouvelle b::after { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--lampe); margin-left: 8px; }
+.alertes li span { color: var(--doux); font-size: 14px; }
+.alertes li time { color: var(--doux); font-size: 12px; font-variant-numeric: tabular-nums; }
+.alertes li.info b { font-weight: 500; }
+.alertes .vide { padding: 10px; font-size: 14px; }
+
+/* ---------- laboratoire ---------- */
+[hidden] { display: none !important; }
+.labo { grid-column: 1 / -1; overflow: auto; padding: 24px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 34px; align-content: start; }
+.bloc { max-width: 1040px; min-width: 0; }
+.bloc h2 { font: 500 24px/1.2 var(--serif); margin: 0 0 6px; }
+.bloc .meta { color: var(--doux); margin: 0 0 14px; max-width: 78ch; }
+.defile { overflow-x: auto; }
+.labo table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.labo th { text-align: left; font-weight: 500; color: var(--doux); padding: 6px 12px 8px 0; border-bottom: 1px solid var(--trait); white-space: nowrap; }
+.labo td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--plan-haut); vertical-align: top; }
+.labo .n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.labo td small { display: block; color: var(--doux); margin-left: 18px; max-width: 52ch; }
+.pastille { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+.marque { font-size: 12px; border: 1px solid var(--trait); border-radius: 999px; padding: 1px 8px; color: var(--doux); white-space: nowrap; }
+.formulaire { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: end; margin-bottom: 12px; }
+.formulaire label { display: grid; gap: 4px; font-size: 13px; color: var(--doux); }
+.formulaire input { font: inherit; color: var(--texte); background: var(--fond); border: 1px solid var(--trait); border-radius: 8px; padding: 6px 9px; }
+.option { display: flex; gap: 8px; align-items: center; font-size: 14px; color: var(--doux); margin-bottom: 6px; }
+.graphe { position: relative; margin-bottom: 14px; }
+.graphe svg { width: 100%; height: auto; display: block; }
+.grille { stroke: var(--plan-haut); } .zero { stroke: var(--trait); }
+.axe { fill: var(--doux); font: 12px var(--sans); font-variant-numeric: tabular-nums; }
+.bout { fill: var(--texte); font: 12px var(--sans); }
+.viseur { stroke: var(--doux); stroke-width: 1; }
+.bulle { position: absolute; background: var(--plan-haut); border: 1px solid var(--trait); border-radius: 8px; padding: 8px 10px; font-size: 13px; pointer-events: none; min-width: 190px; }
+.bulle div { display: flex; align-items: center; }
+.bulle span { margin-left: auto; padding-left: 14px; font-variant-numeric: tabular-nums; }
+
+/* ---------- espaces, replay, investigation ---------- */
+.espaces { display: flex; gap: 6px 22px; overflow-x: auto; padding: 8px 24px; border-bottom: 1px solid var(--trait); scrollbar-width: thin; }
+.espaces .groupe { display: flex; align-items: center; gap: 2px; flex: none; }
+.espaces span { color: var(--doux); font-size: 12px; margin-right: 6px; }
+.espaces button { border: 0; background: none; padding: 5px 11px; border-radius: 999px; color: var(--doux); white-space: nowrap; }
+.espaces button:hover { color: var(--texte); }
+.espaces button[aria-pressed="true"] { background: var(--plan-haut); color: var(--texte); font-weight: 600; }
+.supervision { margin: 4px 0 0 4px; color: var(--doux); font-size: 13px; font-variant-numeric: tabular-nums; }
+.supervision b { color: var(--texte); font-weight: 600; }
+.supervision b.non { color: var(--non); }
+.jauges { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px 26px; margin: 0 0 14px; }
+.jauges div { border-top: 1px solid var(--trait); padding-top: 8px; }
+.jauges dt { color: var(--doux); font-size: 13px; }
+.jauges dd { margin: 2px 0 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.jauges dd small { font-weight: 400; color: var(--doux); }
+.jauges .barre { height: 4px; background: var(--plan-haut); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.jauges .barre i { display: block; height: 100%; background: var(--ok); }
+.jauges .barre i.haut { background: var(--lampe); } .jauges .barre i.plein { background: var(--non); }
+.portrait { display: flex; gap: 14px; align-items: center; margin-bottom: 6px; }
+.portrait .grand { flex: none; border-radius: 50%; filter: drop-shadow(0 6px 14px rgba(0,0,0,.45)); }
+.portrait h2 { margin: 0; }
+.avecVisage { display: flex; gap: 10px; align-items: flex-start; }
+.avecVisage .visage { flex: none; border-radius: 50%; }
+.explication { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; margin: 0 0 8px; border-radius: 12px; background: var(--plan-haut); }
+.explication p { margin: 0; font: 400 16px/1.45 var(--serif); }
+.explication .mini { flex: none; border-radius: 50%; }
+.graphique { height: 380px; border: 1px solid var(--trait); border-radius: 12px; overflow: hidden; }
+@media (max-width: 900px) { .graphique { height: 300px; } }
+.lienfil { border: 0; background: none; color: var(--lampe); padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+.recherche { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: end; margin-bottom: 14px; font-size: 14px; }
+.recherche label { display: grid; gap: 3px; color: var(--doux); }
+.recherche input[type="text"] { font: inherit; color: var(--texte); background: var(--fond); border: 1px solid var(--trait); border-radius: 8px; padding: 6px 9px; }
+.vide2 { color: var(--doux); font-style: italic; }
+.onglets { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--trait); border-radius: 999px; }
+.onglets button { border: 0; background: none; padding: 5px 14px; border-radius: 999px; color: var(--doux); }
+.onglets button[aria-pressed="true"] { background: var(--plan-haut); color: var(--texte); font-weight: 600; }
+.replay { margin: 0 0 12px 4px; padding: 12px 14px; border: 1px solid var(--trait); border-radius: 12px; }
+.replay[hidden], .filtres[hidden] { display: none; }
+.commandes { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-size: 14px; }
+.commandes label { display: flex; align-items: center; gap: 6px; color: var(--doux); }
+.replay p { margin: 10px 0 0; color: var(--doux); font-size: 14px; font-variant-numeric: tabular-nums; }
+select, input[type="search"], input[type="date"] {
+  font: inherit; color: var(--texte); background: var(--fond); border: 1px solid var(--trait);
+  border-radius: 8px; padding: 6px 9px; color-scheme: dark;
+}
+.filtres { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; font-size: 14px; color: var(--doux); }
+.filtres input[type="search"] { flex: 1 1 100%; }
+.filtres p { flex: 1 1 100%; margin: 0; font-size: 13px; }
+.filtres p.perte { color: var(--non); }
+body.enquete .fils { max-height: 46vh; }
+body.enquete .fils button { grid-template-columns: 118px 1fr; }
+.etapes details { margin-top: 6px; font-size: 13px; }
+.etapes summary { color: var(--doux); cursor: pointer; width: fit-content; }
+.etapes details .fiche { margin: 8px 0 0; font-size: 13px; gap: 3px 12px; }
+.etapes details dd { overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+
+.alerte { margin: 0; padding: 9px 24px; background: rgba(242,117,95,.16); color: #ffb4a6; font-size: 14px; }
+.alerte[hidden] { display: none; }
+
+@media (max-width: 900px) {
+  body { display: block; height: auto; }
+  main { grid-template-columns: 1fr; }
+  aside { border-left: 0; border-top: 1px solid var(--trait); }
+  .carte { padding: 8px 12px 14px; }
+  .actions { margin-left: 0; }
+  .labo { padding: 18px 16px; }
+  header { padding: 14px 16px; }
+  .espaces { padding: 8px 16px; }
+  .fils { max-height: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .noeud.recoit circle.halo, .noeud.recoit .perso, .noeud.parle .perso { animation: none; }
+}
+</style>
+</head>
+<body>
+<div>
+  <header>
+    <h1 class="nom">Jarvis</h1>
+    <span class="marche" id="marche"></span>
+    <dl class="chiffres">
+      <div><dt>Capital</dt><dd id="capital">…</dd></div>
+      <div><dt>Aujourd'hui</dt><dd id="jour">…</dd></div>
+      <div><dt>Positions</dt><dd id="positions">…</dd></div>
+      <div><dt>Prochain cycle</dt><dd id="prochain">…</dd></div>
+    </dl>
+    <div class="actions">
+      <details class="alertes" id="alertes">
+        <summary class="btn">Alertes<b id="nbAlertes" hidden></b></summary>
+        <ul id="listeAlertes"></ul>
+      </details>
+      <span class="etat" id="etat"><i></i><span>Connexion…</span></span>
+      <button class="btn fort" id="lancer">Lancer un cycle</button>
+      <button class="btn danger" id="arret">Arrêt d'urgence</button>
+    </div>
+  </header>
+  <nav class="espaces" id="espaces" aria-label="Espaces">
+    <div class="groupe"><span>Direct</span><button data-espace="direct" aria-pressed="true">Commande</button><button data-espace="agents">Agents</button></div>
+    <div class="groupe"><span>Marchés</span><button data-espace="marches">Marchés</button><button data-espace="plateformes">Plateformes</button></div>
+    <div class="groupe"><span>Trading</span><button data-espace="trades">Trades</button><button data-espace="execution">Exécution</button><button data-espace="portefeuille">Portefeuille</button></div>
+    <div class="groupe"><span>Contrôle</span><button data-espace="risque">Risque</button><button data-espace="performance">Performance</button><button data-espace="securite">Sécurité</button></div>
+    <div class="groupe"><span>Historique</span><button data-espace="audit">Audit</button><button data-espace="enquete">Replay</button></div>
+    <div class="groupe"><span>Recherche</span><button data-espace="labo">Laboratoire</button></div>
+    <div class="groupe"><span>Système</span><button data-espace="config">Configuration</button></div>
+  </nav>
+  <p class="alerte" id="alerte" hidden></p>
+</div>
+
+<main>
+  <section class="carte" id="carte" aria-label="Carte des agents">
+    <p class="supervision" id="supervision"></p>
+    <svg id="svg" viewBox="0 0 900 540" role="img" aria-label="Agents et liaisons">
+      <defs>
+        <marker id="fleche" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 1 L9 5 L0 9 z" fill="#7d78a0"/>
+        </marker>
+      </defs>
+      <g id="liens"></g>
+      <g id="noeuds"></g>
+      <g id="bulle" aria-hidden="true"><rect id="bulleFond" x="0" y="-11" height="22" rx="11"/><path id="bulleQueue" d="M-2 6 L-8 14 L4 9 Z"/><text id="bulleTexte" x="0" y="4.5"></text></g>
+    </svg>
+    <div class="replay" id="replay" hidden>
+      <div class="commandes">
+        <button class="btn" id="precedent">Message précédent</button>
+        <button class="btn fort" id="lecture">Mettre en pause</button>
+        <button class="btn" id="suivant">Message suivant</button>
+        <label>Vitesse
+          <select id="vitesse"><option value="0.4">lente</option><option value="1" selected>normale</option><option value="2.5">rapide</option></select>
+        </label>
+        <label><input type="checkbox" id="enchainer"> enchaîner sur les fils suivants</label>
+      </div>
+      <p id="ouEnEstOn"></p>
+    </div>
+    <ul class="legende">
+      <li><svg viewBox="0 0 34 10"><line x1="0" y1="5" x2="34" y2="5" class="lien utilise"/></svg>liaison déjà utilisée</li>
+      <li><svg viewBox="0 0 34 10"><line x1="0" y1="5" x2="34" y2="5" class="lien"/></svg>liaison prévue, pas encore utilisée</li>
+      <li><svg viewBox="0 0 34 14" style="height:14px"><rect x="1" y="1" width="32" height="12" rx="6" fill="#f4b942"/><text x="17" y="10" text-anchor="middle" font-size="7.5" font-weight="700" fill="#2a2110">signal</text></svg>message réel en route : ce qu'il dit, de l'expéditeur au destinataire (rouge : refus)</li>
+      <li><svg viewBox="0 0 34 14" style="height:14px"><circle cx="17" cy="7" r="5.5" fill="none" stroke="#f4b942" stroke-width="2"/></svg>agent qui parle ou qui reçoit</li>
+      <li>le nombre dans chaque agent compte ses messages envoyés</li>
+    </ul>
+    <p class="note">Les agents se répondent en quelques millisecondes. La carte rejoue chaque message au ralenti pour qu'on puisse le suivre ; rien n'est affiché qui ne vienne du journal. Cliquez sur un agent ou une liaison pour voir ses messages.</p>
+  </section>
+
+  <aside id="cote">
+    <div class="recit" id="recit" aria-live="polite"></div>
+    <div class="fils">
+      <h3 id="titreFils">Derniers fils</h3>
+      <div class="filtres" id="filtres" hidden>
+        <input type="search" id="recherche" placeholder="Chercher un mot : stop, refusé, achat…" aria-label="Chercher dans les messages">
+        <select id="genre" aria-label="Type de fil">
+          <option value="tous">Tous les fils</option>
+          <option value="ordre">Avec un ordre exécuté</option>
+          <option value="refus">Refusés par le risque</option>
+          <option value="erreur">Avec une erreur</option>
+          <option value="arret">Arrêts et reprises</option>
+          <option value="calme">Sans signal</option>
+        </select>
+        <label>Depuis le <input type="date" id="depuis"></label>
+        <p id="integrite"></p>
+      </div>
+      <ul id="fils"></ul>
+    </div>
+  </aside>
+
+  <section class="labo" id="espace" hidden aria-live="polite"></section>
+
+  <section class="labo" id="labo" hidden>
+    <div class="bloc">
+      <h2>Parcours de validation</h2>
+      <p class="meta">Une stratégie avance d'une étape à la fois : candidate, backtest validé, papier validé, éligible au réel. Chaque étape demande des critères chiffrés remplis et votre décision. Aucun agent ne peut faire avancer une stratégie.</p>
+      <form id="formEval" class="formulaire">
+        <label>Marchés <input id="panier" size="26" value="BTC/EUR, ETH/EUR, SOL/EUR"></label>
+        <label>Bougies
+          <select id="evalBougies"><option value="1h">1 heure</option><option value="4h" selected>4 heures</option><option value="1d">1 jour</option></select>
+        </label>
+        <label>Période
+          <select id="evalPeriode"><option value="365">1 an</option><option value="730" selected>2 ans</option><option value="1800">5 ans</option></select>
+        </label>
+        <button class="btn fort" id="evaluer">Évaluer les stratégies</button>
+      </form>
+      <p class="meta" id="evalEtat"></p>
+      <div id="parcours"></div>
+    </div>
+    <div class="bloc">
+      <h2>Compétition en cours</h2>
+      <label class="option">Bougies <select id="laboTf"><option value="principal">du cycle principal</option><option value="1d">d'un jour (preuves futures)</option></select></label>
+      <p class="meta" id="laboMeta"></p>
+      <div class="defile"><table id="classement"></table></div>
+      <p class="note">Les portefeuilles du laboratoire sont séparés du portefeuille principal. Leurs ordres sont simulés au dernier prix de clôture avec un glissement fixe, sans lecture du carnet d'ordres.</p>
+      <h3>Rapport de performance détaillé</h3>
+      <p class="meta" id="rapportMeta"></p>
+      <div class="defile"><table id="rapportPerf"></table></div>
+      <h3>Lecture du futur (lookahead)</h3>
+      <p class="meta" id="lookaheadMeta">Vérification en cours…</p>
+      <div class="defile"><table id="lookaheadTable"></table></div>
+      <h3>Stabilité selon l'historique (récursivité)</h3>
+      <p class="meta" id="recursifMeta">Vérification en cours…</p>
+      <div class="defile"><table id="recursifTable"></table></div>
+      <h3>Robustesse Monte-Carlo</h3>
+      <p class="meta" id="robusteMeta"></p>
+      <div class="defile"><table id="robustePerf"></table></div>
+    </div>
+    <div class="bloc">
+      <h2>Tester sur le passé</h2>
+      <form id="formTest" class="formulaire">
+        <label>Paire <input id="paire" required pattern="[A-Za-z0-9]+/[A-Za-z]+" placeholder="BTC/EUR" size="10"></label>
+        <label>Bougies
+          <select id="bougies"><option value="1h">1 heure</option><option value="4h" selected>4 heures</option><option value="1d">1 jour</option></select>
+        </label>
+        <label>Période
+          <select id="periode"><option value="180">6 mois</option><option value="365">1 an</option><option value="730" selected>2 ans</option><option value="1800">5 ans</option></select>
+        </label>
+        <button class="btn fort" id="comparer">Comparer les stratégies</button>
+      </form>
+      <p class="meta" id="testEtat">Choisissez une paire et une période : les quatre stratégies seront rejouées sur les mêmes bougies, avec les vrais frais.</p>
+      <div id="testResultat" hidden>
+        <label class="option"><input type="checkbox" id="avecMarche" checked> afficher « acheter et garder » sur le graphique</label>
+        <div class="graphe"><svg id="courbe" role="img" aria-label="Rendement de chaque stratégie au fil du temps"></svg><div class="bulle" id="bulle" hidden></div></div>
+        <div class="defile"><table id="testTable"></table></div>
+        <p class="note">Les deux moitiés sont rejouées séparément : une stratégie qui ne gagne que sur l'une des deux n'est pas fiable. Un bon résultat sur le passé ne prouve pas la rentabilité future.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const POS = {
+  coordinator: [445, 70], exchange_monitor: [200, 95], portfolio_optimizer: [632, 375],
+  market_intelligence: [70, 250], regime_detector: [195, 250],
+  strategy_analyst: [320, 250], adversarial_analyst: [445, 250], trade_proposer: [570, 250],
+  risk_manager: [695, 250], execution: [820, 250], performance_analyst: [640, 480],
+  execution_intelligence: [757, 150], arbitrage_analyst: [285, 395],
+  learning_manager: [540, 470], news_analyst: [75, 115], ai_analyst: [190, 352],
+  portfolio_manager: [820, 440], auditor: [445, 455], security_monitor: [110, 450],
+};
+const R = 30, PAS = 750;
+const $ = (id) => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const el = (name, attrs = {}, parent) => {
+  const node = document.createElementNS(NS, name);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (parent) parent.appendChild(node);
+  return node;
+};
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const eur = (n) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+const heure = (ts) => new Date(ts).toLocaleTimeString("fr-FR");
+const jour = (ts) => new Date(ts).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
+const calme = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+let etat = null, evenements = [], labels = {};
+let mode = "direct";                       // "direct", "enquete", "labo" ou "espace"
+let espaceCourant = null;                  // espace affiché quand mode === "espace"
+let vue = { type: "fil", id: null };
+const liens = new Map(), noeuds = new Map();
+const lecteur = { liste: [], i: 0, actif: false };
+let pause = false, unPas = false, vitesse = 1, enchainer = false, etapeEnCours = null;
+let dernier = 0, saut = null;   // dernier message joué ; saut demandé par « message précédent »
+
+
+/* ---------- personnages : un visage par agent, dessiné en SVG avec un rendu « 3D » ---------- */
+const PEAUX = ["#f6d5bf", "#efc2a0", "#dda07a", "#c1835e", "#9a6143", "#7a4a33"];
+// fond, peau (indice), haut, cheveux, accessoire(s), humeur
+const PERSOS = {
+  coordinator:            ["#5865f2", 2, "#232742", "#2b1d16", ["casque"], "content"],
+  exchange_monitor:       ["#2fa79f", 0, "#1e3b3a", "#5a3a22", ["antennes"], "neutre"],
+  market_intelligence:    ["#e3a233", 1, "#2a2a2a", "#3b2a1c", ["casquette", "ecouteurs"], "blase"],
+  regime_detector:        ["#5d9de0", 3, "#26364d", "#1c1410", ["bonnet"], "neutre"],
+  strategy_analyst:       ["#9277e6", 0, "#3a2e5c", "#7a5230", ["lunettes"], "reflechi"],
+  adversarial_analyst:    ["#d9534f", 4, "#2b1818", "#120c0a", ["lunettesNoires"], "sceptique"],
+  trade_proposer:         ["#e277ae", 1, "#f4f1ea", "#a8642f", ["noeud"], "sourire"],
+  portfolio_optimizer:    ["#4fae69", 5, "#21402b", "#1a1210", ["chignon"], "content"],
+  risk_manager:           ["#2d6a88", 2, "#f0c419", "#2b1d16", ["chantier"], "serieux"],
+  execution_intelligence: ["#3fb0d6", 3, "#1c3646", "#3b2a1c", ["visiere"], "concentre"],
+  execution:              ["#f2834a", 4, "#2c1a12", "#120c0a", ["casquetteEnvers", "ecouteurs"], "concentre"],
+  portfolio_manager:      ["#86b25f", 0, "#33402a", "#c9c3b8", ["monocle", "moustache"], "content"],
+  performance_analyst:    ["#c55bd4", 4, "#3a1f40", "#120c0a", ["bandeau"], "sourire"],
+  security_monitor:       ["#46566f", 1, "#14181f", "#2b1d16", ["casquetteSombre", "lunettesNoires"], "serieux"],
+  auditor:                ["#a98552", 5, "#3a2c19", "#3b2a1c", ["lunettes", "loupe"], "reflechi"],
+  arbitrage_analyst:      ["#2bb497", 2, "#1d3a33", "#2b1d16", ["casquetteEnvers"], "malin"],
+  learning_manager:       ["#6c63ff", 3, "#262150", "#1c1410", ["toque"], "reflechi"],
+  news_analyst:           ["#d9875a", 0, "#3f2a1d", "#a8642f", ["beret"], "content"],
+  ai_analyst:             ["#26282f", 2, "#0f1013", "#0f1013", ["etincelle", "lunettes"], "malin"],
+};
+function teinte(hex, k) {           // k > 0 éclaircit, k < 0 assombrit
+  const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255];
+  return "#" + c.map((v) => Math.round(k > 0 ? v + (255 - v) * k : v * (1 + k)).toString(16).padStart(2, "0")).join("");
+}
+const ACCESSOIRES = {
+  casque: (c) => `<path d="M-17 -4 C-17 -24 17 -24 17 -4" fill="none" stroke="#1c1c24" stroke-width="3.2"/>
+    <rect x="-20" y="-7" width="6" height="11" rx="3" fill="#1c1c24"/><rect x="14" y="-7" width="6" height="11" rx="3" fill="#1c1c24"/>
+    <path d="M-17 3 Q-15 12 -6 12" fill="none" stroke="#1c1c24" stroke-width="1.8"/><circle cx="-5" cy="12" r="2" fill="#e04e4e"/>`,
+  antennes: () => `<line x1="-7" y1="-17" x2="-11" y2="-27" stroke="#c9d3dc" stroke-width="1.8"/><line x1="7" y1="-17" x2="11" y2="-27" stroke="#c9d3dc" stroke-width="1.8"/>
+    <circle cx="-11" cy="-27" r="2.8" fill="#7cf0c8"/><circle cx="11" cy="-27" r="2.8" fill="#7cf0c8"/>`,
+  casquette: () => `<path d="M-16 -7 C-17 -24 17 -24 16 -7 Z" fill="url(#gCasq)"/><path d="M-4 -9 C6 -11 18 -10 24 -6 C16 -4 6 -5 -4 -6 Z" fill="#d9cfb8"/>
+    <circle cx="0" cy="-21" r="1.6" fill="#cfc4ab"/>`,
+  ecouteurs: () => `<rect x="-17.5" y="-1" width="3.2" height="7" rx="1.6" fill="#f6f6f6"/><rect x="14.3" y="-1" width="3.2" height="7" rx="1.6" fill="#f6f6f6"/>`,
+  bonnet: () => `<path d="M-16 -6 C-17 -27 17 -27 16 -6 Z" fill="#e2574c"/><rect x="-17" y="-9" width="34" height="6" rx="3" fill="#b8382f"/><circle cx="0" cy="-26" r="4" fill="#f4f1ea"/>`,
+  lunettes: () => `<g fill="rgba(200,230,255,.18)" stroke="#2a2420" stroke-width="1.5"><circle cx="-6" cy="-2" r="5"/><circle cx="6" cy="-2" r="5"/></g><path d="M-1 -2 h2" stroke="#2a2420" stroke-width="1.5"/>`,
+  lunettesNoires: () => `<path d="M-13 -6 h11 l-1 6 q-1 3 -5 3 q-4 0 -5 -3 z M2 -6 h11 l-1 6 q-1 3 -5 3 q-4 0 -5 -3 z" fill="#111"/>
+    <path d="M-2 -5 h4" stroke="#111" stroke-width="1.6"/><path d="M-10 -4.5 l3 0" stroke="rgba(255,255,255,.55)" stroke-width="1.2" stroke-linecap="round"/><path d="M5 -4.5 l3 0" stroke="rgba(255,255,255,.55)" stroke-width="1.2" stroke-linecap="round"/>`,
+  noeud: () => `<path d="M0 19 L-7 15 L-7 23 Z M0 19 L7 15 L7 23 Z" fill="#d6304a"/><circle cx="0" cy="19" r="2" fill="#a8233a"/>`,
+  chignon: (c) => `<circle cx="0" cy="-20" r="6.5" fill="${c}"/>`,
+  chantier: () => `<path d="M-17 -6 C-17 -26 17 -26 17 -6 Z" fill="url(#gChantier)"/><rect x="-20" y="-8" width="40" height="4.5" rx="2.2" fill="#d9a90f"/><rect x="-2" y="-24" width="4" height="17" rx="2" fill="#ffd84a"/>`,
+  visiere: () => `<path d="M-16 -9 Q0 -14 16 -9 L16 -5 Q0 -9 -16 -5 Z" fill="#2b2b33"/><path d="M-16 -6 Q0 -10 16 -6 Q14 0 0 0 Q-14 0 -16 -6 Z" fill="rgba(80,200,255,.45)"/>`,
+  casquetteEnvers: () => `<path d="M-16 -7 C-17 -24 17 -24 16 -7 Z" fill="#2c2c34"/><path d="M-18 -10 C-24 -10 -27 -7 -26 -5 C-22 -6 -18 -7 -15 -7 Z" fill="#1f1f26"/>`,
+  monocle: () => `<circle cx="6" cy="-2" r="5" fill="rgba(200,230,255,.2)" stroke="#c8a24a" stroke-width="1.5"/><path d="M10 2 Q13 10 9 16" fill="none" stroke="#c8a24a" stroke-width="1"/>`,
+  moustache: (c) => `<path d="M-7 6 Q-3 3 0 5.5 Q3 3 7 6 Q3 8.5 0 6.8 Q-3 8.5 -7 6 Z" fill="${c}"/>`,
+  bandeau: () => `<rect x="-16.5" y="-12" width="33" height="5" rx="2.5" fill="#f4f1ea"/><rect x="-16.5" y="-11" width="33" height="1.4" fill="#e2574c"/>`,
+  casquetteSombre: () => `<path d="M-16 -7 C-17 -24 17 -24 16 -7 Z" fill="#1d2430"/><path d="M-16 -8 C-8 -11 8 -11 16 -8 C10 -5 -10 -5 -16 -8 Z" fill="#141a22"/><rect x="-3" y="-19" width="6" height="5" rx="1" fill="#f0c419"/>`,
+  loupe: () => `<circle cx="17" cy="15" r="6" fill="rgba(200,230,255,.25)" stroke="#e8e2d4" stroke-width="2"/><line x1="21" y1="20" x2="26" y2="27" stroke="#8a6a3a" stroke-width="3" stroke-linecap="round"/>`,
+  toque: () => `<path d="M-14 -12 C-14 -20 14 -20 14 -12 Z" fill="#1c1a2e"/><path d="M0 -28 L22 -21 L0 -14 L-22 -21 Z" fill="#26233f"/><path d="M14 -19 Q19 -12 17 -5" fill="none" stroke="#f0c419" stroke-width="1.3"/><circle cx="17" cy="-5" r="1.8" fill="#f0c419"/>`,
+  etincelle: () => `<path d="M0 -31 L2.4 -24.5 L9 -22 L2.4 -19.5 L0 -13 L-2.4 -19.5 L-9 -22 L-2.4 -24.5 Z" fill="#f4f1ea"/>
+    <path d="M13 -27 L14 -24.5 L16.5 -23.5 L14 -22.5 L13 -20 L12 -22.5 L9.5 -23.5 L12 -24.5 Z" fill="#c9d3dc"/>`,
+  beret: () => `<ellipse cx="-2" cy="-14" rx="17" ry="7.5" fill="#3a3f63"/><circle cx="-2" cy="-21" r="1.8" fill="#2a2e4a"/>`,
+};
+const HUMEURS = {
+  content:   { sourcils: "M-9 -9 Q-6 -11 -2 -9 M2 -9 Q6 -11 9 -9", bouche: `<path d="M-5 7.5 Q0 11.5 5 7.5" fill="none" stroke="#5a2e22" stroke-width="1.6" stroke-linecap="round"/>` },
+  sourire:   { sourcils: "M-9 -10 Q-6 -12 -2 -10 M2 -10 Q6 -12 9 -10", bouche: `<path d="M-6.5 6 Q0 15 6.5 6 Z" fill="#5a1f1a"/><path d="M-5 6.6 Q0 8.4 5 6.6 L5 7.8 Q0 9.4 -5 7.8 Z" fill="#fff"/>` },
+  neutre:    { sourcils: "M-9 -9.5 L-2 -9.5 M2 -9.5 L9 -9.5", bouche: `<path d="M-4 8.5 L4 8.5" stroke="#5a2e22" stroke-width="1.6" stroke-linecap="round"/>` },
+  blase:     { sourcils: "M-9 -8.5 L-2 -8 M2 -8 L9 -8.5", bouche: `<path d="M-4 9 Q0 8 4 9" fill="none" stroke="#5a2e22" stroke-width="1.6" stroke-linecap="round"/>`, paupieres: true },
+  sceptique: { sourcils: "M-9 -9 L-2 -8.5 M2 -12 Q6 -13.5 9 -11", bouche: `<path d="M-4 9 Q2 9.5 6 6.5" fill="none" stroke="#5a2e22" stroke-width="1.6" stroke-linecap="round"/>` },
+  serieux:   { sourcils: "M-9 -11 L-2 -8.5 M2 -8.5 L9 -11", bouche: `<path d="M-4 9 L4 9" stroke="#5a2e22" stroke-width="1.8" stroke-linecap="round"/>` },
+  reflechi:  { sourcils: "M-9 -10 Q-6 -12 -2 -10.5 M2 -10.5 Q6 -12 9 -10", bouche: `<circle cx="1.5" cy="8.5" r="1.8" fill="#5a2e22"/>`, regard: -1.2 },
+  concentre: { sourcils: "M-9 -10 L-2 -9 M2 -9 L9 -10", bouche: `<path d="M-3.5 8.5 L3.5 8.5" stroke="#5a2e22" stroke-width="1.6" stroke-linecap="round"/>` },
+  malin:     { sourcils: "M-9 -10 Q-6 -11.5 -2 -10 M2 -11.5 Q6 -12.5 9 -10.5", bouche: `<path d="M-5 7.5 Q1 11 6 6" fill="none" stroke="#5a2e22" stroke-width="1.7" stroke-linecap="round"/>` },
+};
+function symbolePerso(nom) {
+  const [fond, ip, haut, cheveux, accs, humeur] = PERSOS[nom] || ["#7d78a0", 2, "#2a2a2a", "#2b1d16", [], "neutre"];
+  const peau = PEAUX[ip], h = HUMEURS[humeur], id = nom, dy = h.regard || 0;
+  const chapeau = accs.some((a) => ["casquette", "bonnet", "chantier", "casquetteEnvers", "casquetteSombre", "toque", "beret"].includes(a));
+  const yeux = h.paupieres
+    ? [-6, 6].map((x) => `<ellipse cx="${x}" cy="-1" rx="3.8" ry="3.4" fill="#fff"/><circle cx="${x + 0.4}" cy="0" r="2" fill="#2a1d18"/><path d="M${x - 4.2} -1.2 Q${x} -5 ${x + 4.2} -1.2 L${x + 4.2} -0.4 L${x - 4.2} -0.4 Z" fill="${teinte(peau, -0.08)}"/>`).join("")
+    : [-6, 6].map((x) => `<ellipse cx="${x}" cy="-2" rx="3.6" ry="4.1" fill="#fff"/><circle cx="${x + 0.5}" cy="${-1.4 + dy}" r="2.1" fill="#2a1d18"/><circle cx="${x + 1.2}" cy="${-2.3 + dy}" r=".75" fill="#fff"/>`).join("");
+  return `<symbol id="av-${id}" viewBox="-32 -32 64 64">
+    <defs>
+      <radialGradient id="gf-${id}" cx=".32" cy=".28" r=".85"><stop offset="0" stop-color="${teinte(fond, .38)}"/><stop offset=".55" stop-color="${fond}"/><stop offset="1" stop-color="${teinte(fond, -.45)}"/></radialGradient>
+      <radialGradient id="gp-${id}" cx=".36" cy=".3" r=".8"><stop offset="0" stop-color="${teinte(peau, .3)}"/><stop offset=".6" stop-color="${peau}"/><stop offset="1" stop-color="${teinte(peau, -.28)}"/></radialGradient>
+      <linearGradient id="gh-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${teinte(haut, .22)}"/><stop offset="1" stop-color="${teinte(haut, -.35)}"/></linearGradient>
+      <clipPath id="cd-${id}"><circle r="30"/></clipPath>
+    </defs>
+    <circle r="30" fill="url(#gf-${id})"/>
+    <g clip-path="url(#cd-${id})">
+      <ellipse cx="0" cy="31" rx="22" ry="5" fill="rgba(0,0,0,.25)"/>
+      <path d="M-27 34 C-25 21 -13 17 0 17 C13 17 25 21 27 34 Z" fill="url(#gh-${id})"/>
+      <rect x="-4.5" y="11" width="9" height="8" rx="3" fill="${teinte(peau, -.18)}"/>
+      <ellipse cx="-15.5" cy="0" rx="3.6" ry="4.6" fill="${teinte(peau, -.08)}"/><ellipse cx="15.5" cy="0" rx="3.6" ry="4.6" fill="${teinte(peau, -.08)}"/>
+      <ellipse cx="0" cy="14.5" rx="8" ry="3" fill="rgba(0,0,0,.3)"/>
+      <ellipse cx="0" cy="-1" rx="15.5" ry="16.5" fill="url(#gp-${id})"/>
+      <path d="M11.5 -11 A15.5 16.5 0 0 1 9.5 12.5" fill="none" stroke="${teinte(fond, .55)}" stroke-width="1.8" stroke-linecap="round" opacity=".6"/>
+      <ellipse cx="-7.5" cy="-9" rx="3.2" ry="1.8" fill="#fff" opacity=".28" transform="rotate(-20 -7.5 -9)"/>
+      ${chapeau ? "" : `<path d="M-15.5 -4 C-17 -20 -6 -21 0 -19 C7 -21 17 -18 15.5 -4 C13 -11 6 -14 0 -13 C-7 -14 -13 -11 -15.5 -4 Z" fill="${cheveux}"/>`}
+      <ellipse cx="-9.5" cy="5" rx="3.2" ry="2" fill="#ff7a7a" opacity=".22"/><ellipse cx="9.5" cy="5" rx="3.2" ry="2" fill="#ff7a7a" opacity=".22"/>
+      ${yeux}
+      <path d="${h.sourcils}" fill="none" stroke="${teinte(cheveux, -.2)}" stroke-width="1.7" stroke-linecap="round"/>
+      <ellipse cx="0.4" cy="4.2" rx="2.6" ry="1.2" fill="${teinte(peau, -.25)}" opacity=".55"/>
+      <path d="M-1.2 1 Q0 5 1.6 3.6" fill="none" stroke="${teinte(peau, -.3)}" stroke-width="1.2" stroke-linecap="round"/>
+      <circle cx="-0.6" cy="1.2" r=".8" fill="#fff" opacity=".45"/>
+      ${h.bouche}
+      ${accs.map((a) => ACCESSOIRES[a](cheveux)).join("")}
+      <ellipse cx="-6" cy="-11" rx="6" ry="3.5" fill="#fff" opacity=".18"/>
+    </g>
+    <path d="M-22 -18 A28 28 0 0 1 4 -29" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".35"/>
+    <circle r="29.3" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>
+  </symbol>`;
+}
+function installerPersos() {
+  const defs = $("svg").querySelector("defs");
+  if (defs.querySelector("#gCasq")) return;
+  defs.insertAdjacentHTML("beforeend", `
+    <linearGradient id="gCasq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6efdd"/><stop offset="1" stop-color="#cbbf9f"/></linearGradient>
+    <linearGradient id="gChantier" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe066"/><stop offset="1" stop-color="#d9a90f"/></linearGradient>
+    ${Object.keys(PERSOS).map(symbolePerso).join("")}`);
+}
+const visage = (nom, taille = 28, classe = "visage") =>
+  `<svg class="${classe}" width="${taille}" height="${taille}" viewBox="0 0 64 64" aria-hidden="true"><use href="#av-${PERSOS[nom] ? nom : "coordinator"}" width="64" height="64"/></svg>`;
+
+// Ce que dit chaque message, en un ou deux mots, pour la bulle qui voyage sur la carte.
+const BULLES = {
+  "cycle.start": "c'est parti", "cycle.end": "terminé", "market.snapshot": "prix", "market.order_book": "carnet",
+  "market.scan": "scan", "regime.detected": "régime", "strategy.signal": "signal !", "strategy.no_signal": "rien",
+  "strategy.exit_signal": "on sort", "strategy.lab": "labo", "trade.proposal": "proposition",
+  "allocation.assessment": "allocation", "routing.plan": "routage", "execution.fill": "exécuté",
+  "execution.order_placed": "ordre posé", "execution.expired": "expiré", "execution.cancelled": "annulé",
+  "execution.rejected": "rejeté", "portfolio.update": "solde", "audit.thread_recorded": "archivé",
+  "exchange.status": "état", "performance.report": "bilan", "performance.degradation": "pause",
+  "arbitrage.scan": "écarts", "learning.review": "leçons", "learning.proposal": "réglage", "news.update": "actus",
+  "security.alert": "alerte !", "system.halt": "STOP", "system.resume": "reprise", "agent.error": "erreur",
+  "anomaly.report": "anomalie", "config.loaded": "config", "registry.change": "statut",
+};
+function texteBulle(e) {
+  if (e.type === "risk.decision") return e.status === "ok" ? "accord" : "refus";
+  if (e.type === "adversarial.review") return e.status === "ok" ? "rien à redire" : "objection !";
+  return BULLES[e.type] || e.type.split(".").pop();
+}
+
+/* ---------- données ---------- */
+function fils() {
+  const map = new Map();
+  for (const e of evenements) {
+    const cle = e.correlation_id === "manual" ? "manual:" + e.id : e.correlation_id;
+    if (!map.has(cle)) map.set(cle, []);
+    map.get(cle).push(e);
+  }
+  return [...map.entries()].map(([id, list]) => {
+    const fin = list.find((e) => e.type === "cycle.end");
+    const manuel = id.startsWith("manual:");
+    const genre = manuel ? "arret"
+      : list.some((e) => e.status === "error") ? "erreur"
+      : list.some((e) => e.type === "execution.fill") ? "ordre"
+      : list.some((e) => e.type === "risk.decision" && e.status === "rejected") ? "refus"
+      : "calme";
+    return { id, list, debut: list[0].ts, genre,
+             status: fin ? fin.status : manuel ? "rejected" : "ok",
+             bilan: manuel ? list[0].result.replace(/\.$/, "")
+               : fin ? fin.result.replace(/^Cycle terminé : /, "").replace(/\.$/, "") : "en cours" };
+  }).reverse();
+}
+function filsFiltres(tous) {
+  if (mode !== "enquete") return tous.filter((f) => f.genre !== "arret");
+  const mot = $("recherche").value.trim().toLowerCase(), genre = $("genre").value, depuis = $("depuis").value;
+  return tous.filter((f) =>
+    (genre === "tous" || f.genre === genre)
+    && (!depuis || f.debut.slice(0, 10) >= depuis)
+    && (!mot || f.list.some((e) => (e.result + " " + (labels[e.source] || "")).toLowerCase().includes(mot))));
+}
+
+/* ---------- carte ---------- */
+function chemin(s, t) {
+  const [x1, y1] = POS[s], [x2, y2] = POS[t];
+  const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+  const courbe = Math.min(46, len * 0.16);
+  const cx = (x1 + x2) / 2 - (dy / len) * courbe, cy = (y1 + y2) / 2 + (dx / len) * courbe;
+  const bord = (px, py) => { const d = Math.hypot(cx - px, cy - py); return [px + (cx - px) / d * (R + 4), py + (cy - py) / d * (R + 4)]; };
+  const [ax, ay] = bord(x1, y1), [bx, by] = bord(x2, y2);
+  return `M${ax.toFixed(1)} ${ay.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${bx.toFixed(1)} ${by.toFixed(1)}`;
+}
+function ajouterLien(s, t, utilise) {
+  const cle = `${s}>${t}`;
+  if (!POS[s] || !POS[t] || s === t) return null;
+  let lien = liens.get(cle);
+  if (!lien) {
+    const d = chemin(s, t);
+    const trait = el("path", { d, class: "lien", "marker-end": "url(#fleche)" }, $("liens"));
+    const zone = el("path", { d, class: "zone", tabindex: 0, role: "button",
+      "aria-label": `Liaison ${labels[s]} vers ${labels[t]}` }, $("liens"));
+    const ouvrir = () => choisir({ type: "lien", id: cle });
+    zone.addEventListener("click", ouvrir);
+    zone.addEventListener("keydown", (e) => { if (e.key === "Enter") ouvrir(); });
+    lien = { trait, s, t };
+    liens.set(cle, lien);
+  }
+  if (utilise) lien.trait.classList.add("utilise");
+  return lien;
+}
+function dessinerNoeuds() {
+  installerPersos();
+  for (const a of etat.agents) {
+    if (!POS[a.name] || noeuds.has(a.name)) continue;
+    const [x, y] = POS[a.name];
+    const g = el("g", { class: "noeud", tabindex: 0, role: "button", "aria-label": `Agent ${a.label}` }, $("noeuds"));
+    el("circle", { class: "halo", cx: x, cy: y, r: R }, g);
+    el("ellipse", { class: "ombre", cx: x, cy: y + R + 4, rx: R * 0.7, ry: 4 }, g);
+    const corps = el("g", { class: "perso" }, g);
+    el("use", { href: `#av-${a.name}`, x: x - R, y: y - R, width: R * 2, height: R * 2 }, corps);
+    el("circle", { class: "corps", cx: x, cy: y, r: R + 2 }, g);
+    el("text", { x, y: y < 120 ? y - R - 12 : y + R + 20 }, g).textContent = a.label;
+    el("circle", { class: "pastilleN", cx: x + R * 0.78, cy: y + R * 0.78, r: 10 }, g);
+    const sous = el("text", { class: "sous", x: x + R * 0.78, y: y + R * 0.78 + 4 }, g);
+    const ouvrir = () => choisir({ type: "agent", id: a.name });
+    g.addEventListener("click", ouvrir);
+    g.addEventListener("keydown", (e) => { if (e.key === "Enter") ouvrir(); });
+    noeuds.set(a.name, { g, sous });
+  }
+}
+function majNoeuds() {
+  const compte = {};
+  for (const e of evenements) compte[e.source] = (compte[e.source] || 0) + 1;
+  for (const a of etat.agents) {
+    const n = noeuds.get(a.name);
+    if (!n) continue;
+    n.g.classList.remove("idle", "active", "error", "stopped");
+    n.g.classList.add(a.status);
+    n.g.classList.toggle("choisi", vue.type === "agent" && vue.id === a.name);
+    n.sous.textContent = compte[a.name] || 0;
+  }
+  for (const [cle, lien] of liens) lien.trait.classList.toggle("choisi", vue.type === "lien" && vue.id === cle);
+}
+
+function ficheRegistre(a) {
+  const envoyes = evenements.filter((e) => e.source === a.name);
+  const durees = envoyes.map((e) => e.duration_ms).filter((d) => d != null);
+  const erreurs = envoyes.filter((e) => e.status === "error").length;
+  const refus = envoyes.filter((e) => e.status === "rejected").length;
+  const noms = (l) => l.map((n) => esc(labels[n] || n)).join(", ");
+  return `<dt>Reçoit</dt><dd>${esc((a.inputs || []).join(", ")) || "rien"}</dd>
+    <dt>Émet</dt><dd>${esc((a.outputs || []).join(", "))}</dd>
+    <dt>Dépend de</dt><dd>${(a.depends || []).length ? noms(a.depends) : "aucun agent"}</dd>
+    <dt>Messages envoyés</dt><dd>${envoyes.length}, dont ${refus} refus et ${erreurs} erreur(s)</dd>
+    <dt>Temps de travail moyen</dt><dd>${durees.length ? (durees.reduce((x, y) => x + y, 0) / durees.length).toFixed(1) + " ms" : "pas encore mesuré"}</dd>`;
+}
+
+/* ---------- lecteur : rejoue des messages réels, au ralenti ---------- */
+function charger(list, ajouter = false) {
+  if (ajouter && lecteur.actif) lecteur.liste.push(...list);
+  else { lecteur.liste = list.slice(); lecteur.i = 0; saut = null; dernier = 0; }
+  if (!lecteur.actif) boucle();
+}
+async function boucle() {
+  lecteur.actif = true;
+  while (true) {
+    if (saut !== null) { lecteur.i = saut; saut = null; }
+    if (lecteur.i >= lecteur.liste.length) break;
+    if (pause) {
+      if (!unPas) { await attendre(120); continue; }
+      unPas = false;
+    }
+    const e = lecteur.liste[lecteur.i];
+    etapeEnCours = e.id; dernier = lecteur.i;
+    marquerEtape(); majReplay();
+    await jouer(e);
+    lecteur.i++;
+  }
+  etapeEnCours = null; lecteur.actif = false;
+  marquerEtape(); majReplay();
+  if (mode === "enquete" && enchainer && !pause) filSuivant();
+}
+function filSuivant() {
+  const liste = filsFiltres(fils()), i = liste.findIndex((f) => f.id === vue.id);
+  if (vue.type === "fil" && i > 0) choisir({ type: "fil", id: liste[i - 1].id }, true);  // liste : du plus récent au plus ancien
+}
+function jouer(e) {
+  return new Promise((fin) => {
+    const source = noeuds.get(e.source), cible = noeuds.get(e.target), lien = ajouterLien(e.source, e.target, true), tempo = PAS / vitesse;
+    const bulle = $("bulle"), refus = e.status !== "ok";
+    $("bulleTexte").textContent = texteBulle(e);
+    const larg = Math.max(34, $("bulleTexte").getComputedTextLength() + 22);
+    $("bulleFond").setAttribute("x", -larg / 2); $("bulleFond").setAttribute("width", larg);
+    bulle.classList.toggle("non", refus);
+    const relance = (n, classe) => { if (!n) return; n.g.classList.remove(classe); void n.g.getBoundingClientRect(); n.g.classList.add(classe); };
+    const arrivee = () => {
+      relance(cible, "recoit");
+      setTimeout(() => { cible?.g.classList.remove("recoit"); source?.g.classList.remove("parle"); lien?.trait.classList.remove("passe"); fin(); }, calme ? 250 : tempo * 0.35);
+    };
+    if (calme) return arrivee();
+    relance(source, "parle");
+    if (!lien) {
+      // Message à soi-même (ou sans liaison dessinée) : la bulle s'affiche au-dessus de l'agent.
+      if (!source) return arrivee();
+      const [x, y] = POS[e.source];
+      bulle.setAttribute("transform", `translate(${x} ${y - R - 20})`); bulle.style.opacity = 1;
+      return setTimeout(() => { bulle.style.opacity = 0; arrivee(); }, tempo * 0.6);
+    }
+    const total = lien.trait.getTotalLength(), t0 = performance.now(), duree = tempo * 0.65;
+    lien.trait.classList.add("passe");
+    bulle.style.opacity = 1;
+    const pas = (now) => {
+      const k = Math.min(1, (now - t0) / duree), p = lien.trait.getPointAtLength(total * (k * k * (3 - 2 * k)));
+      bulle.setAttribute("transform", `translate(${p.x.toFixed(1)} ${(p.y - 14).toFixed(1)})`);
+      if (k < 1) requestAnimationFrame(pas); else { bulle.style.opacity = 0; arrivee(); }
+    };
+    requestAnimationFrame(pas);
+  });
+}
+function marquerEtape() {
+  const enAttente = new Set(lecteur.liste.slice(lecteur.i + (lecteur.actif ? 1 : 0)).map((e) => e.id));
+  document.querySelectorAll(".etapes li").forEach((li) => {
+    li.classList.toggle("encours", li.dataset.id === etapeEnCours);
+    li.classList.toggle("attente", lecteur.actif && enAttente.has(li.dataset.id));
+  });
+  document.querySelector(".etapes li.encours")?.scrollIntoView({ block: "nearest", behavior: calme ? "auto" : "smooth" });
+}
+function majReplay() {
+  $("lecture").textContent = pause ? "Reprendre la lecture" : "Mettre en pause";
+  const n = lecteur.liste.length;
+  if (!n) return void ($("ouEnEstOn").textContent = "Choisissez un fil dans la liste pour le rejouer.");
+  // Pendant la lecture, on affiche le dernier message réellement joué (pas le suivant).
+  const i = Math.min(lecteur.actif ? dernier : lecteur.i, n - 1), e = lecteur.liste[i];
+  // État du portefeuille tel qu'il était à ce moment-là, lu dans le journal.
+  const avant = evenements.filter((x) => x.type === "portfolio.update" && x.ts <= e.ts).pop();
+  const capital = avant ? `Capital à ce moment : ${eur(avant.payload.equity)}, ${Object.keys(avant.payload.positions || {}).length} position(s).` : "";
+  $("ouEnEstOn").textContent = `${lecteur.actif ? "Message" : "Fin du fil, message"} ${i + 1} sur ${n}, le ${jour(e.ts)} à ${heure(e.ts)}. ${capital}`;
+}
+
+/* ---------- panneau de droite ---------- */
+const valeur = (v) => v === null ? "inconnu" : typeof v === "object" ? JSON.stringify(v) : typeof v === "number" ? v.toLocaleString("fr-FR", { maximumFractionDigits: 8 }) : String(v);
+const etape = (e) => `<li class="${e.status}" data-id="${e.id}">${visage(e.source, 30, "avatar")}
+  <div class="qui"><b>${esc(labels[e.source] || e.source)}</b>${e.source === e.target ? "" : `<span class="vers">→ ${visage(e.target, 18, "mini")} ${esc(labels[e.target] || e.target)}</span>`}<span class="mot ${e.status === "ok" ? "" : "non"}">${esc(texteBulle(e))}</span>
+  <time>${heure(e.ts)}</time>${e.duration_ms != null ? `<span>${e.duration_ms < 1 ? "moins d'1 ms" : Math.round(e.duration_ms) + " ms"}</span>` : ""}</div>
+  <p class="dit">${esc(e.result)}</p>
+  <details><summary>Données de ce message</summary><dl class="fiche">
+    ${Object.entries(e.payload || {}).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(valeur(v))}</dd>`).join("") || "<dt>Aucune donnée jointe</dt><dd></dd>"}
+    <dt>Type</dt><dd>${esc(e.type)}</dd><dt>Fil</dt><dd>${esc(e.correlation_id)}</dd>
+    <dt>Empreinte</dt><dd title="${esc(e.hash)}">${esc(e.hash.slice(0, 16))}…</dd>
+  </dl></details></li>`;
+
+function choisir(nouvelle, rejouer = false) {
+  vue = nouvelle;
+  rendre();
+  if (rejouer && vue.type === "fil") {
+    const fil = fils().find((f) => f.id === vue.id);
+    if (fil) { if (mode === "enquete") { pause = false; } charger(fil.list); }
+  }
+}
+function rendre() { rendreRecit(); rendreListe(); if (etat) majNoeuds(); }
+function rendreRecit() {
+  const tous = fils(), recit = $("recit");
+  if (vue.type === "fil" && !vue.id) vue.id = filsFiltres(tous)[0]?.id ?? null;
+  let html = "";
+  if (vue.type === "fil") {
+    const fil = tous.find((f) => f.id === vue.id);
+    if (!fil) {
+      html = `<p class="vide">Aucun fil pour l'instant. Lancez un cycle : chaque message échangé entre les agents s'écrira ici, dans l'ordre.</p>`;
+    } else {
+      html = `<h2>Fil du ${jour(fil.debut)} à ${heure(fil.debut)}</h2>
+        <p class="meta">${fil.list.length} message${fil.list.length > 1 ? "s" : ""}, ${esc(fil.bilan)}. <button class="retour" id="rejouer">Rejouer sur la carte</button>${(etat.system.ai || {}).enabled ? ` <button class="retour" id="expliquer">Expliquer ce fil (${esc(etat.system.ai.label)})</button>` : ""}</p>
+        <div id="explication"></div>
+        <ol class="etapes">${fil.list.map(etape).join("")}</ol>`;
+    }
+  } else if (vue.type === "agent") {
+    const a = etat.agents.find((x) => x.name === vue.id);
+    const list = evenements.filter((e) => e.source === vue.id || e.target === vue.id).slice(-25).reverse();
+    const statut = { idle: "en attente", active: "au travail", error: "en erreur", stopped: "arrêté" }[a.status] || a.status;
+    html = `<button class="retour" id="retour">Revenir au dernier fil</button>
+      <div class="portrait">${visage(a.name, 72, "grand")}<div><h2>${esc(a.label)}</h2><p class="meta">${esc(a.role)}</p></div></div>
+      <dl class="fiche"><dt>État</dt><dd>${statut}</dd>
+      <dt>Dernier signe de vie</dt><dd>${a.last_heartbeat ? heure(a.last_heartbeat) : "aucun depuis le démarrage"}</dd>
+      ${a.last_error ? `<dt>Dernière erreur</dt><dd>${esc(a.last_error)}</dd>` : ""}
+      ${ficheRegistre(a)}</dl>
+      ${list.length ? `<ol class="etapes">${list.map(etape).join("")}</ol>` : `<p class="vide">Cet agent n'a encore envoyé ni reçu aucun message.</p>`}`;
+  } else {
+    const [s, t] = vue.id.split(">");
+    const list = evenements.filter((e) => e.source === s && e.target === t).slice(-25).reverse();
+    html = `<button class="retour" id="retour">Revenir au dernier fil</button>
+      <h2>${esc(labels[s])} à ${esc(labels[t])}</h2>
+      <p class="meta">${list.length ? "Les derniers messages passés par cette liaison, du plus récent au plus ancien." : ""}</p>
+      ${list.length ? `<ol class="etapes">${list.map(etape).join("")}</ol>` : `<p class="vide">Aucun message n'est encore passé par cette liaison. Elle servira quand la situation se présentera, par exemple lors d'un signal d'achat.</p>`}`;
+  }
+  recit.innerHTML = html;
+  $("retour")?.addEventListener("click", () => choisir({ type: "fil", id: null }));
+  $("rejouer")?.addEventListener("click", () => choisir(vue, true));
+  $("expliquer")?.addEventListener("click", async () => {
+    const b = $("expliquer"), cible = $("explication");
+    b.disabled = true; cible.innerHTML = `<p class="meta">${esc(etat.system.ai.label)} lit le fil…</p>`;
+    try {
+      const r = await api("/api/explain", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ thread: vue.id }) });
+      cible.innerHTML = `<div class="explication">${visage("ai_analyst", 30, "mini")}<p>${esc(r.text)}</p></div><p class="meta">Avis de ${esc(etat.system.ai.label)} (${esc(r.model)}), non vérifié. Il ne décide de rien.</p>`;
+    } catch (err) { cible.innerHTML = `<p class="meta perte">${esc(err.message)}</p>`; }
+    b.disabled = false;
+  });
+  marquerEtape();
+}
+function rendreListe() {
+  const tous = fils(), liste = filsFiltres(tous);
+  $("titreFils").textContent = mode === "enquete" ? `${liste.length} fil${liste.length > 1 ? "s" : ""} sur ${tous.length}` : "Derniers fils";
+  $("fils").innerHTML = liste.slice(0, mode === "enquete" ? 300 : 40).map((f) => `<li><button data-id="${f.id}" class="${f.status} ${vue.type === "fil" && vue.id === f.id ? "choisi" : ""}">
+    <time>${mode === "enquete" ? jour(f.debut) + " " : ""}${heure(f.debut)}</time><span>${esc(f.bilan)}</span></button></li>`).join("")
+    || `<li class="vide" style="font-size:14px">${mode === "enquete" ? "Aucun fil ne correspond à ces critères." : "Rien encore."}</li>`;
+  $("fils").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => choisir({ type: "fil", id: b.dataset.id }, true)));
+}
+
+/* ---------- modes ---------- */
+async function changerMode(nouveau) {
+  mode = nouveau;
+  pause = false; unPas = false;
+  document.body.classList.toggle("enquete", mode === "enquete");
+  const cle = mode === "espace" ? espaceCourant : mode;
+  document.querySelectorAll("#espaces [data-espace]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.espace === cle));
+  const actif = document.querySelector('#espaces [aria-pressed="true"]');
+  if (actif) actif.scrollIntoView({ block: "nearest", inline: "nearest" });
+  $("replay").hidden = $("filtres").hidden = mode !== "enquete";
+  $("carte").hidden = $("cote").hidden = mode === "labo" || mode === "espace";
+  $("labo").hidden = mode !== "labo";
+  $("espace").hidden = mode !== "espace";
+  if (mode === "espace") { $("espace").innerHTML = `<p class="vide2">Chargement…</p>`; rendreEspace(); }
+  if (mode === "labo") { if (etat && !$("paire").value) $("paire").value = etat.system.symbol; chargerLabo(); chargerRapport(); chargerRobustesse(); chargerLookahead(); chargerRecursif(); chargerParcours(); }
+  if (mode === "direct") vue = { type: "fil", id: null };
+  rendre(); majReplay();
+  if (mode === "enquete") verifierJournal();
+}
+async function verifierJournal() {
+  $("integrite").textContent = "Vérification du journal…";
+  try {
+    const r = await (await fetch("/api/verify")).json();
+    $("integrite").className = r.intact ? "" : "perte";
+    $("integrite").textContent = r.intact
+      ? `Journal intact : ${r.count} messages vérifiés, aucun n'a été modifié après coup.`
+      : `Journal altéré à la ligne ${r.bad_line} : les messages suivants ne sont plus fiables.`;
+    const b = r.database;
+    if (b) {
+      if (!b.consistent) $("integrite").className = "perte";
+      $("integrite").textContent += b.consistent
+        ? ` La base de données contient les mêmes ${b.database} messages.`
+        : ` Base de données différente du journal : ${b.missing} manquant(s), ${b.altered} modifié(s), ${b.extra} en trop. Les manquants se rattrapent au redémarrage ; une ligne modifiée signale une altération de la base.`;
+    }
+  } catch { $("integrite").textContent = "Vérification impossible : serveur injoignable."; }
+}
+document.querySelectorAll("#espaces [data-espace]").forEach((b) => b.addEventListener("click", () => {
+  const k = b.dataset.espace;
+  if (["direct", "enquete", "labo"].includes(k)) changerMode(k);
+  else { espaceCourant = k; changerMode("espace"); }
+}));
+$("lecture").addEventListener("click", () => { pause = !pause; majReplay(); });
+$("suivant").addEventListener("click", () => { pause = true; unPas = true; if (!lecteur.actif && lecteur.i < lecteur.liste.length) boucle(); majReplay(); });
+$("precedent").addEventListener("click", () => {
+  if (!lecteur.liste.length) return;
+  pause = true; unPas = true;
+  saut = Math.max(0, dernier - 1);
+  if (!lecteur.actif) boucle();
+  majReplay();
+});
+$("vitesse").addEventListener("change", (e) => { vitesse = Number(e.target.value); });
+$("enchainer").addEventListener("change", (e) => { enchainer = e.target.checked; });
+for (const id of ["recherche", "genre", "depuis"]) $(id).addEventListener("input", rendreListe);
+
+/* ---------- barre du haut ---------- */
+function majBarre() {
+  const s = etat.system, p = etat.portfolio;
+  const plateformes = (s.venues && s.venues.length ? s.venues : [{ exchange: s.exchange, watchlist: s.watchlist || [s.symbol] }])
+    .map((v) => `${v.watchlist.join(", ")} sur ${v.exchange}${v.health && v.health.circuit === "open" ? " (suspendue)" : ""}`).join(" ; ");
+  $("marche").textContent = `${plateformes}, bougies ${s.timeframe}, stratégie ${s.strategy}, argent fictif, un portefeuille par plateforme`;
+  $("capital").textContent = eur(p.equity);
+  $("jour").textContent = (p.daily_pnl > 0 ? "+" : "") + eur(p.daily_pnl);
+  $("jour").className = p.daily_pnl > 0 ? "gain" : p.daily_pnl < 0 ? "perte" : "";
+  const n = Object.keys(p.positions).length;
+  $("positions").textContent = n ? Object.keys(p.positions).join(", ") : "aucune";
+  $("etat").className = "etat" + (s.halted ? " arret" : "");
+  $("etat").lastElementChild.textContent = s.halted ? "À l'arrêt" : s.running ? "Cycle en cours" : "En marche";
+  $("arret").textContent = s.halted ? "Reprendre" : "Arrêt d'urgence";
+  $("arret").className = s.halted ? "btn" : "btn danger";
+  $("lancer").disabled = s.halted || s.running;
+  $("alerte").hidden = !s.halted;
+  $("alerte").textContent = s.halted ? `${s.halt_reason} Aucun ordre ne partira tant que vous n'aurez pas cliqué sur Reprendre.` : "";
+  compteRebours();
+  majSupervision();
+}
+function compteRebours() {
+  if (!etat) return;
+  const s = etat.system;
+  if (s.halted) return void ($("prochain").textContent = "suspendu");
+  if (!s.next_cycle_at) return void ($("prochain").textContent = "sur demande");
+  const reste = Math.max(0, Math.round(s.next_cycle_at - Date.now() / 1000));
+  const h = Math.floor(reste / 3600), m = Math.floor((reste % 3600) / 60);
+  $("prochain").textContent = h ? `dans ${h} h ${String(m).padStart(2, "0")}` : reste >= 60 ? `dans ${m} min ${String(reste % 60).padStart(2, "0")} s` : `dans ${reste} s`;
+}
+async function chargerEtat() {
+  try {
+    etat = await (await fetch("/api/state")).json();
+    for (const a of etat.agents) labels[a.name] = a.label;
+    dessinerNoeuds();
+    for (const l of etat.links) ajouterLien(l.source, l.target, l.count > 0);
+    majNoeuds(); majBarre();
+  } catch { $("etat").className = "etat arret"; $("etat").lastElementChild.textContent = "Serveur injoignable"; }
+}
+async function envoyer(url, corps) {
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corps || {}) });
+  if (!r.ok) { const d = await r.json().catch(() => ({})); $("alerte").hidden = false; $("alerte").textContent = d.detail || "Action refusée."; }
+  await chargerEtat();
+}
+$("lancer").addEventListener("click", () => envoyer("/api/cycle"));
+$("arret").addEventListener("click", () => {
+  if (etat.system.halted) return envoyer("/api/resume");
+  if (!confirm("Arrêter le système ? Aucun nouvel ordre ne partira tant que vous n'aurez pas repris.")) return;
+  const n = Object.keys(etat.portfolio.positions).length + (etat.system.venues || []).slice(1).reduce((t, v) => t + v.positions, 0);
+  const fermer = n > 0 && confirm(`Fermer aussi les ${n} position(s) simulée(s) au dernier prix connu ?\n\nOK : tout vendre maintenant.\nAnnuler : garder les positions ; leurs stops restent surveillés à chaque clôture de bougie, sans aucun achat.`);
+  envoyer("/api/halt", { reason: "demandé depuis l'interface", flatten: fermer });
+});
+
+/* ---------- laboratoire ---------- */
+const COUL = { momentum_demo: "#3987e5", breakout: "#d95926", trend: "#199e70", reversion: "#c98500" };
+const GRIS = "#a9a3b8";
+const pct = (v, d = 2) => v == null ? "n/a" : (v > 0 ? "+" : "") + (v * 100).toFixed(d).replace(".", ",") + " %";
+const pastille = (c) => `<i class="pastille" style="background:${c || GRIS}"></i>`;
+let dernierTest = null;
+
+$("laboTf").addEventListener("change", () => { chargerLabo(); chargerRapport(); chargerRobustesse(); });
+async function chargerLabo() {
+  try {
+    const d = await (await fetch("/api/lab?tf=" + $("laboTf").value)).json();
+    const debut = new Date(d.since).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    const aucun = d.standings.every((r) => r.trades === 0 && !r.in_position);
+    $("laboMeta").textContent = `Depuis le ${debut}, chaque stratégie joue avec son propre portefeuille fictif de ${eur(d.start_equity)} sur les paires suivies, bougies ${d.timeframe}. `
+      + (aucun ? "Aucune n'a encore pris de position : les écarts apparaîtront avec les premiers trades." : "")
+      + (d.error ? ` Dernière erreur du laboratoire : ${d.error}` : "");
+    $("classement").innerHTML = `<thead><tr><th>Stratégie</th><th class="n">Capital</th><th class="n">Depuis le départ</th>
+      <th class="n">Trades clôturés</th><th class="n">Gagnants</th><th>En position</th></tr></thead><tbody>`
+      + d.standings.map((r) => `<tr><td>${pastille(COUL[r.name])}${esc(r.label)}${r.active ? ` <span class="marque">pilote le portefeuille principal</span>` : ""}
+        <small>${esc(r.family)}</small></td>
+        <td class="n">${eur(r.equity)}</td><td class="n ${r.return > 0 ? "gain" : r.return < 0 ? "perte" : ""}">${pct(r.return)}</td>
+        <td class="n">${r.trades}</td><td class="n">${r.trades ? `${r.wins} sur ${r.trades}` : "aucun"}</td>
+        <td>${r.in_position ? "oui" : "non"}</td></tr>`).join("") + "</tbody>";
+  } catch { $("laboMeta").textContent = "Laboratoire injoignable."; }
+}
+
+const ratio = (v) => v == null ? "n/d" : v.toFixed(2).replace(".", ",");
+async function chargerRapport() {
+  try {
+    const d = await (await fetch("/api/tearsheet?tf=" + $("laboTf").value)).json();
+    const lignes = [...Object.values(d.lab).map((r) => ({ ...r, quoi: r.name })),
+                    ...Object.entries(d.shadow).map(([ex, r]) => ({ ...r, quoi: `Shadow ${ex}`, shadow: true }))];
+    const notes = new Set(lignes.flatMap((r) => r.notes || []));
+    $("rapportMeta").textContent = "Calculé sur le seul résultat réalisé, jour par jour. Shadow : trades écartés par les protections, comptés comme s'ils avaient été pris. "
+      + [...notes].join(" ");
+    $("rapportPerf").innerHTML = `<thead><tr><th>Stratégie</th><th class="n">Rendement</th><th class="n">Annualisé</th><th class="n">Sharpe</th>
+      <th class="n">Sortino</th><th class="n">Perte max.</th><th class="n">Trades</th><th class="n">Espérance</th></tr></thead><tbody>`
+      + lignes.map((r) => r.error
+        ? `<tr><td>${r.shadow ? "" : pastille(COUL[r.quoi])}${esc(r.quoi)}</td><td colspan="7" class="perte">Rapport refusé : ${esc(r.error)}</td></tr>`
+        : `<tr><td>${r.shadow ? "" : pastille(COUL[r.quoi])}${esc(r.quoi)}<small>${r.metrics.days} jours</small></td>
+          <td class="n ${r.metrics.return > 0 ? "gain" : r.metrics.return < 0 ? "perte" : ""}">${pct(r.metrics.return)}</td>
+          <td class="n">${pct(r.metrics.annual_return)}</td><td class="n">${ratio(r.metrics.sharpe)}</td><td class="n">${ratio(r.metrics.sortino)}</td>
+          <td class="n">${pct(-r.metrics.max_drawdown)}<small>${r.metrics.max_drawdown_days} j</small></td>
+          <td class="n">${r.trades.trades}</td><td class="n">${r.trades.expectancy == null ? "n/d" : eur(r.trades.expectancy)}</td></tr>`).join("") + "</tbody>";
+  } catch { $("rapportMeta").textContent = "Rapport de performance injoignable."; }
+}
+
+const LOOK = { sain: ["gain", "sain"], fuite: ["perte", "lit le futur"], non_reproductible: ["perte", "résultat instable"],
+  insuffisant: ["", "pas assez de signaux pour conclure"], erreur: ["perte", "erreur"] };
+async function chargerLookahead() {
+  try {
+    const d = await (await fetch("/api/lookahead")).json();
+    $("lookaheadMeta").textContent = d.error ? "Vérification impossible : " + d.error
+      : `Chaque décision est recalculée après avoir remplacé les bougies suivantes par des futurs inventés : une stratégie honnête décide pareil. ${d.candles} bougies ${d.timeframe} de ${d.symbol}. C'est une détection, pas une preuve. Recalculé toutes les 6 heures.`;
+    $("lookaheadTable").innerHTML = `<thead><tr><th>Stratégie</th><th>Verdict</th><th>Détail</th></tr></thead><tbody>`
+      + Object.entries(d.reports || {}).map(([n, r]) => `<tr><td>${n === "regimes" ? "calcul des régimes" : pastille(COUL[n]) + esc(n)}</td>
+        <td class="${(LOOK[r.status] || ["perte"])[0]}">${esc((LOOK[r.status] || ["", r.status])[1])}</td><td><small>${esc(r.reason)}</small></td></tr>`).join("") + "</tbody>";
+  } catch { $("lookaheadMeta").textContent = "Vérification injoignable."; }
+}
+
+const RECU = { stable: ["gain", "stable"], instable: ["perte", "dépend de l'historique"],
+  insuffisant: ["", "pas assez de signaux pour conclure"], erreur: ["perte", "erreur"] };
+async function chargerRecursif() {
+  try {
+    const rep = await fetch("/api/recursive");
+    if (!rep.ok) { $("recursifMeta").textContent = "Analyse pas encore disponible sur ce serveur."; $("recursifTable").innerHTML = ""; return; }
+    const d = await rep.json();
+    $("recursifMeta").textContent = d.error ? "Vérification impossible : " + d.error
+      : `Entrées et sorties recalculées sur les mêmes dernières bougies avec plus ou moins d'historique, comparées à l'historique le plus long. Le backtest donne 300 bougies aux stratégies. ${d.candles} bougies ${d.timeframe} de ${d.symbol}. Recalculé toutes les 6 heures.`;
+    $("recursifTable").innerHTML = `<thead><tr><th>Stratégie</th><th>Verdict</th><th class="n">Stable dès</th><th>Désaccord par longueur</th></tr></thead><tbody>`
+      + Object.entries(d.reports || {}).map(([n, r]) => `<tr><td>${pastille(COUL[n]) + esc(n)}</td>
+        <td class="${(RECU[r.status] || ["perte"])[0]}">${esc((RECU[r.status] || ["", r.status])[1])}</td>
+        <td class="n">${r.min_stable == null ? "n/d" : esc(r.min_stable) + " bougies"}</td>
+        <td><small>${esc(Object.entries(r.lengths || {}).map(([l, v]) => l + " : " + Math.round(100 * v.disagreement) + " %").join(" · ") || r.reason)}</small></td></tr>`).join("") + "</tbody>";
+  } catch { $("recursifMeta").textContent = "Vérification injoignable."; }
+}
+
+async function chargerRobustesse() {
+  try {
+    const d = await (await fetch("/api/robustness?tf=" + $("laboTf").value)).json();
+    $("robusteMeta").textContent = "Les trades clôturés de chaque stratégie sont tirés au hasard et rejoués 2 000 fois, avec des frais et un glissement qui varient. La fourchette contient 90 % des résultats. "
+      + (d.error ? "Calcul refusé : " + d.error : "Information seulement : aucun effet sur les décisions.");
+    $("robustePerf").innerHTML = `<thead><tr><th>Stratégie</th><th class="n">Rendement (fourchette)</th><th class="n">Perte max. défavorable</th>
+      <th class="n">Probabilité de perte</th><th class="n">Trades</th></tr></thead><tbody>`
+      + d.rows.map((r) => r.status !== "ok"
+        ? `<tr><td>${pastille(COUL[r.name])}${esc(r.label)}</td><td colspan="4">Non concluant : ${esc(r.reason)}</td></tr>`
+        : `<tr><td>${pastille(COUL[r.name])}${esc(r.label)}${(r.warnings || []).map((w) => `<small>${esc(w)}</small>`).join("")}</td>
+          <td class="n">${pct(r.return.low)} à ${pct(r.return.high)}<small>médiane ${pct(r.return.median)}</small></td>
+          <td class="n">${pct(-r.max_drawdown.high)}</td><td class="n">${pct(r.prob_loss, 0)}</td><td class="n">${r.trades}</td></tr>`).join("") + "</tbody>";
+  } catch { $("robusteMeta").textContent = "Robustesse injoignable."; }
+}
+
+function graduations(lo, hi) {
+  const brut = (hi - lo) / 4, p = 10 ** Math.floor(Math.log10(brut)), pas = [1, 2, 5, 10].find((k) => k * p >= brut) * p;
+  const out = [];
+  for (let v = Math.ceil(lo / pas) * pas; v <= hi + 1e-9; v += pas) out.push(Math.round(v * 1e6) / 1e6);
+  return out;
+}
+function dessinerCourbe(d) {
+  const avecMarche = $("avecMarche").checked;
+  const series = d.rows.map((r) => ({ nom: r.label, c: COUL[r.name], v: r.curve }));
+  if (avecMarche) series.push({ nom: "acheter et garder", c: GRIS, v: d.hold_curve, tirets: true });
+  const W = 780, H = 310, m = { l: 56, r: 168, t: 14, b: 30 }, n = d.hold_curve.length;
+  const tout = series.flatMap((s) => s.v);
+  let lo = Math.min(0, ...tout), hi = Math.max(0, ...tout);
+  const marge = (hi - lo || 0.01) * 0.08; lo -= marge; hi += marge;
+  const x = (i) => m.l + (i / (n - 1)) * (W - m.l - m.r), y = (v) => m.t + ((hi - v) / (hi - lo)) * (H - m.t - m.b);
+  const date = (ms) => new Date(ms).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit" });
+  let svg = "";
+  for (const g of graduations(lo, hi))
+    svg += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(g)}" y2="${y(g)}" class="${g === 0 ? "zero" : "grille"}"/>
+            <text x="${m.l - 8}" y="${y(g) + 4}" class="axe" text-anchor="end">${pct(g, Math.abs(hi - lo) < 0.08 ? 1 : 0)}</text>`;
+  for (const [i, ancre] of [[0, "start"], [Math.floor((n - 1) / 2), "middle"], [n - 1, "end"]])
+    svg += `<text x="${x(i)}" y="${H - 8}" class="axe" text-anchor="${ancre}">${date(d.times_ms[i])}</text>`;
+  for (const s of series)
+    svg += `<path d="${s.v.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join("")}" fill="none" stroke="${s.c}" stroke-width="2" stroke-linejoin="round" ${s.tirets ? 'stroke-dasharray="5 5"' : ""}/>`;
+  // Étiquettes en bout de ligne, écartées pour ne pas se chevaucher.
+  const bouts = series.map((s) => ({ s, y: y(s.v[n - 1]) })).sort((a, b) => a.y - b.y);
+  for (let i = 1; i < bouts.length; i++) bouts[i].y = Math.max(bouts[i].y, bouts[i - 1].y + 16);
+  for (const b of bouts)
+    svg += `<circle cx="${W - m.r + 10}" cy="${b.y}" r="4" fill="${b.s.c}"/>
+            <text x="${W - m.r + 20}" y="${b.y + 4}" class="bout">${esc(b.s.nom)} ${pct(b.s.v[n - 1], 1)}</text>`;
+  svg += `<line id="viseur" y1="${m.t}" y2="${H - m.b}" class="viseur" visibility="hidden"/>
+          <rect id="capteur" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent"/>`;
+  $("courbe").setAttribute("viewBox", `0 0 ${W} ${H}`);
+  $("courbe").innerHTML = svg;
+  const bulle = $("bulle"), capteur = $("capteur"), viseur = $("viseur");
+  capteur.addEventListener("pointermove", (ev) => {
+    const boite = $("courbe").getBoundingClientRect(), px = (ev.clientX - boite.left) / boite.width * W;
+    const i = Math.max(0, Math.min(n - 1, Math.round((px - m.l) / (W - m.l - m.r) * (n - 1))));
+    viseur.setAttribute("x1", x(i)); viseur.setAttribute("x2", x(i)); viseur.setAttribute("visibility", "visible");
+    bulle.hidden = false;
+    bulle.innerHTML = `<b>${date(d.times_ms[i])}</b>` + series.map((s) => `<div>${pastille(s.c)}${esc(s.nom)}<span>${pct(s.v[i])}</span></div>`).join("");
+    const gauche = ev.clientX - boite.left;
+    bulle.style.left = (gauche > boite.width * 0.6 ? gauche - bulle.offsetWidth - 14 : gauche + 14) + "px";
+    bulle.style.top = "10px";
+  });
+  capteur.addEventListener("pointerleave", () => { viseur.setAttribute("visibility", "hidden"); bulle.hidden = true; });
+}
+function afficherTest(d) {
+  dernierTest = d;
+  const du = new Date(d.from_ms).toLocaleDateString("fr-FR"), au = new Date(d.to_ms).toLocaleDateString("fr-FR");
+  $("testEtat").textContent = `${d.symbol} sur ${d.exchange}, du ${du} au ${au} : ${d.candles} bougies de ${d.timeframe}, frais de ${(d.fee_rate * 100).toFixed(2).replace(".", ",")} % par ordre.`;
+  $("testResultat").hidden = false;
+  dessinerCourbe(d);
+  const classe = (v) => v > 0 ? "gain" : v < 0 ? "perte" : "";
+  $("testTable").innerHTML = `<thead><tr><th>Stratégie</th><th class="n">Rendement</th><th class="n">1re moitié</th><th class="n">2e moitié</th>
+    <th class="n">Perte max</th><th class="n">Trades</th><th class="n">Réussite</th><th class="n">Gains / pertes</th><th class="n">Frais</th></tr></thead><tbody>`
+    + d.rows.map((r) => `<tr><td>${pastille(COUL[r.name])}${esc(r.label)}</td>
+      <td class="n ${classe(r.return)}">${pct(r.return)}</td><td class="n ${classe(r.first_half)}">${pct(r.first_half)}</td>
+      <td class="n ${classe(r.second_half)}">${pct(r.second_half)}</td><td class="n">${pct(-r.max_drawdown)}</td>
+      <td class="n">${r.trades}</td><td class="n">${r.win_rate == null ? "n/a" : Math.round(r.win_rate * 100) + " %"}</td>
+      <td class="n">${r.profit_factor == null ? "n/a" : r.profit_factor.toFixed(2).replace(".", ",")}</td><td class="n">${eur(r.fees)}</td></tr>`).join("")
+    + `<tr><td>${pastille(GRIS)}acheter et garder</td><td class="n ${classe(d.buy_and_hold)}">${pct(d.buy_and_hold)}</td><td colspan="7"></td></tr></tbody>`;
+}
+$("formTest").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const bouton = $("comparer");
+  bouton.disabled = true;
+  $("testEtat").textContent = "Téléchargement de l'historique et calcul en cours, quelques secondes…";
+  try {
+    const r = await fetch("/api/lab/backtest", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbol: $("paire").value.trim().toUpperCase(), timeframe: $("bougies").value, days: Number($("periode").value) }) });
+    const d = await r.json();
+    if (!r.ok) { $("testEtat").textContent = typeof d.detail === "string" ? d.detail : "Demande refusée : vérifiez la paire et la période."; }
+    else afficherTest(d);
+  } catch { $("testEtat").textContent = "Le serveur n'a pas répondu. Vérifiez la connexion puis recommencez."; }
+  bouton.disabled = false;
+});
+$("avecMarche").addEventListener("change", () => { if (dernierTest) dessinerCourbe(dernierTest); });
+
+
+/* ---------- parcours de validation ---------- */
+const ETAPES = [["candidate", "candidate"], ["backtest_ok", "backtest validé"], ["paper_ok", "papier validé"], ["eligible", "éligible au réel"]];
+const critere = (c) => `<li><span class="${c.passed ? "oui" : "non"}">${c.passed ? "oui" : "non"}</span><span>${esc(c.label)}</span><span class="v">${esc(c.value)}</span></li>`;
+function tableRegimes(ev) {
+  if (!ev.by_regime) return "";
+  const euros = (x) => (x == null ? "–" : (x >= 0 ? "+" : "") + eur(x));
+  const u = ev.unfiltered;
+  return `<details class="regimes"><summary>Résultat par régime de marché à l'entrée</summary>
+    <p class="meta">Critères ci-dessus calculés ${ev.regime_filter ? "avec" : "sans"} le filtre de régime. Sans filtre : ${u.trades} trades, ${euros(u.expectancy)} par trade. Le tableau compte tous les trades, filtre désactivé, pour voir où la stratégie gagne et perd. Un régime n'est jugé favorable que s'il gagne sur les deux moitiés de la période.</p>
+    <table><thead><tr><th>Régime</th><th>Trades</th><th>Par trade</th><th>1re moitié</th><th>2e moitié</th><th>Verdict</th></tr></thead><tbody>
+    ${ev.by_regime.map((r) => `<tr><td>${r.axis === "trend" ? esc(r.value) : "volatilité " + esc(r.value)}</td><td>${r.trades}</td><td>${euros(r.expectancy)}</td><td>${euros(r.first_half)}</td><td>${euros(r.second_half)}</td><td>${esc(r.verdict)}</td></tr>`).join("")}
+    </tbody></table></details>`;
+}
+function rendreParcours(d) {
+  $("parcours").innerHTML = d.strategies.map((s) => {
+    const rang = ETAPES.findIndex(([k]) => k === s.status);
+    const ev = s.evaluation;
+    let preuve = "", pret = false;
+    if (s.status === "candidate") {
+      if (!ev) preuve = `<p class="meta">Pas encore évaluée.</p>`;
+      else {
+        pret = ev.passed;
+        preuve = `<p class="meta">Évaluée le ${jour(ev.evaluated_at)} sur ${ev.symbols.join(", ")}, bougies ${ev.timeframe || ""} : rendement moyen ${pct(ev.return)}, ${ev.trades} trades, frais ${eur(ev.fees)}.</p>
+          <p class="fenetres">Résultat par fenêtre, de la plus ancienne à la plus récente : ${ev.window_returns.map((x) => pct(x, 1)).join("  ")}</p>
+          <ul class="criteres">${ev.criteria.map(critere).join("")}</ul>${tableRegimes(ev)}`;
+      }
+    } else if (s.status === "backtest_ok") {
+      pret = s.paper.passed;
+      preuve = `<p class="meta">Étape papier, mesurée sur son portefeuille du laboratoire :</p><ul class="criteres">${s.paper.criteria.map(critere).join("")}</ul>`;
+    } else if (s.status === "paper_ok") {
+      pret = true;
+      preuve = `<p class="meta">Les deux étapes sont validées. Le passage au réel reste une décision de votre part, et le trading réel n'existe pas encore dans cette version.</p>`;
+    }
+    const bouton = s.next
+      ? (pret ? `<button class="btn fort" data-promouvoir="${s.name}" data-label="${esc(s.label)}" data-vers="${esc(s.next_label)}">Passer à « ${esc(s.next_label)} »</button>`
+              : `<span>Critères non remplis : la stratégie reste ${esc(s.status_label)}.</span>`)
+      : `<span>Dernière étape atteinte.</span>`;
+    return `<div class="carteStrat"><h3>${pastille(COUL[s.name])}${esc(s.label)}</h3>
+      <ol class="etapesStatut">${ETAPES.map(([k, l], i) => `<li class="${i < rang ? "fait" : i === rang ? "ici" : ""}">${l}</li>`).join("")}</ol>
+      ${preuve}<div class="action">${bouton}</div></div>`;
+  }).join("");
+  $("parcours").querySelectorAll("[data-promouvoir]").forEach((b) => b.addEventListener("click", async () => {
+    if (!confirm(`Faire passer « ${b.dataset.label} » à l'étape « ${b.dataset.vers} » ? Ce choix sera enregistré dans le journal.`)) return;
+    const r = await fetch("/api/registry/promote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ strategy: b.dataset.promouvoir }) });
+    const d = await r.json();
+    if (!r.ok) $("evalEtat").textContent = d.detail || "Promotion refusée.";
+    else { $("evalEtat").textContent = `« ${b.dataset.label} » est passée à l'étape « ${b.dataset.vers} ».`; rendreParcours(d); }
+  }));
+}
+async function chargerParcours() {
+  try { rendreParcours(await (await fetch("/api/registry")).json()); } catch { $("evalEtat").textContent = "Parcours injoignable."; }
+}
+$("formEval").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  $("evaluer").disabled = true;
+  $("evalEtat").textContent = "Téléchargement de l'historique de chaque marché et calcul en cours, jusqu'à une minute…";
+  try {
+    const r = await fetch("/api/lab/evaluate", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbols: $("panier").value.split(","), timeframe: $("evalBougies").value, days: Number($("evalPeriode").value) }) });
+    const d = await r.json();
+    if (!r.ok) $("evalEtat").textContent = typeof d.detail === "string" ? d.detail : "Demande refusée : vérifiez les marchés et la période.";
+    else { $("evalEtat").textContent = "Évaluation terminée. Un bon résultat sur le passé ne prouve pas la rentabilité future."; rendreParcours(d); }
+  } catch { $("evalEtat").textContent = "Le serveur n'a pas répondu. Recommencez dans un instant."; }
+  $("evaluer").disabled = false;
+});
+
+/* ---------- alertes ---------- */
+let alertes = [];
+const vuJusqua = () => { try { return localStorage.getItem("jarvisAlertesVues") || ""; } catch { return ""; } };
+async function chargerAlertes() {
+  try { alertes = await (await fetch("/api/notifications")).json(); } catch { return; }
+  const vu = vuJusqua(), ouvert = $("alertes").open;
+  const nouvelles = alertes.filter((a) => a.ts > vu && a.level === "important").length;
+  $("nbAlertes").hidden = !nouvelles || ouvert;
+  $("nbAlertes").textContent = nouvelles;
+  $("listeAlertes").innerHTML = alertes.map((a) => `<li class="${a.level} ${a.ts > vu ? "nouvelle" : ""}"><button data-fil="${esc(a.correlation_id || "")}">
+    <b>${esc(a.title)}</b><span>${esc(a.body)}</span><time>${jour(a.ts)} à ${heure(a.ts)}</time></button></li>`).join("")
+    || `<li class="vide">Aucune alerte pour l'instant. Vous serez prévenu d'un ordre, d'un refus du risque, d'une erreur ou d'un arrêt.</li>`;
+  $("listeAlertes").querySelectorAll("button").forEach((b) => b.addEventListener("click", async () => {
+    $("alertes").open = false;
+    const fil = b.dataset.fil;
+    if (!fil || fil === "manual" || !fils().some((f) => f.id === fil)) return;
+    await changerMode("enquete");
+    choisir({ type: "fil", id: fil }, true);
+  }));
+}
+$("alertes").addEventListener("toggle", () => {
+  if ($("alertes").open) { $("nbAlertes").hidden = true; return; }
+  if (alertes.length) { try { localStorage.setItem("jarvisAlertesVues", alertes[0].ts); } catch {} }
+  chargerAlertes();
+});
+
+
+/* ---------- supervision et espaces ---------- */
+function majSupervision() {
+  if (!etat) return;
+  const a = etat.agents, actifs = a.filter((x) => x.status === "active").length;
+  const erreurs = a.filter((x) => x.status === "error").length, arretes = a.filter((x) => !x.enabled).length;
+  const durees = evenements.slice(-200).map((e) => e.duration_ms).filter((d) => d != null);
+  const lat = durees.length ? durees.reduce((x, y) => x + y, 0) / durees.length : null;
+  const nonLues = alertes.filter((x) => x.ts > vuJusqua() && x.level === "important").length;
+  $("supervision").innerHTML = `${a.length} agents : <b>${actifs}</b> au travail, <b class="${erreurs ? "non" : ""}">${erreurs}</b> en erreur${arretes ? `, <b class="non">${arretes}</b> arrêté(s)` : ""} ; `
+    + `0 message en attente (chaque message est traité dès son envoi) ; temps de travail moyen ${lat == null ? "non mesuré" : `<b>${lat.toFixed(1)} ms</b>`} ; `
+    + `<b>${nonLues}</b> alerte(s) non lue(s).`;
+}
+
+// Performance et Sécurité contiennent des formulaires et des boutons longs : pas de rafraîchissement automatique.
+// Trades contient le graphique : pas de rafraîchissement automatique (bouton Actualiser).
+const AUTO = new Set(["agents", "marches", "plateformes", "execution", "portefeuille", "risque"]);
+async function api(url, options) {
+  const r = await fetch(url, options);
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : `erreur ${r.status}`);
+  return d;
+}
+const cherche = (params) => api("/api/search?" + new URLSearchParams(params));
+const quand = (ts) => `${jour(ts)} ${heure(ts)}`;
+const nb = (v, d = 2) => v == null ? "–" : Number(v).toLocaleString("fr-FR", { maximumFractionDigits: d, minimumFractionDigits: d });
+const pb = (v) => v == null ? "–" : `${nb(v, 1)} pb`;
+const euro = (v) => v == null ? "–" : eur(v);
+const pc = (v) => v == null ? "–" : `${nb(v * 100, 1)} %`;
+const nomStrat = (n) => (etat && etat.strategies && etat.strategies[n]) || n || "–";
+const lienFil = (corr, texte = "voir le parcours") => corr && corr !== "manual" ? `<button class="lienfil" data-fil="${esc(corr)}">${texte}</button>` : "";
+function tableau(colonnes, lignes, vide) {
+  if (!lignes.length) return `<p class="vide2">${vide}</p>`;
+  return `<div class="defile"><table><thead><tr>${colonnes.map(([t, , n]) => `<th class="${n ? "n" : ""}">${t}</th>`).join("")}</tr></thead>
+    <tbody>${lignes.map((l) => `<tr>${colonnes.map(([, f, n]) => `<td class="${n ? "n" : ""}">${f(l)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+const bloc = (titre, meta, corps) => `<div class="bloc"><h2>${titre}</h2>${meta ? `<p class="meta">${meta}</p>` : ""}${corps}</div>`;
+function jauge(titre, valeur, detail, part) {
+  const barre = part == null ? "" : `<div class="barre"><i class="${part >= 1 ? "plein" : part >= 0.7 ? "haut" : ""}" style="width:${Math.max(0, Math.min(1, part)) * 100}%"></i></div>`;
+  return `<div><dt>${titre}</dt><dd>${valeur} <small>${detail}</small></dd>${barre}</div>`;
+}
+const dernierPar = (liste, cle) => { const m = new Map(); for (const e of liste) if (!m.has(cle(e))) m.set(cle(e), e); return [...m.values()]; };
+
+async function rendreEspace() {
+  const vue = VUES[espaceCourant];
+  if (!vue) return;
+  const cible = espaceCourant;
+  try {
+    const html = await vue();
+    if (mode !== "espace" || espaceCourant !== cible) return;
+    $("espace").innerHTML = html;
+    brancherEspace();
+  } catch (err) {
+    $("espace").innerHTML = bloc("Données indisponibles", "", `<p class="vide2">${esc(err.message)}. Réessayez dans un instant.</p>`);
+  }
+}
+function brancherEspace() {
+  $("espace").querySelectorAll("[data-fil]").forEach((b) => b.addEventListener("click", async () => {
+    await changerMode("enquete");
+    choisir({ type: "fil", id: b.dataset.fil }, true);
+  }));
+  $("espace").querySelectorAll("[data-agent]").forEach((b) => b.addEventListener("click", async () => {
+    await changerMode("direct");
+    choisir({ type: "agent", id: b.dataset.agent });
+  }));
+  $("espace").querySelectorAll("[data-relancer]").forEach((b) => b.addEventListener("click", async () => {
+    if (!confirm(`Relancer la stratégie « ${b.dataset.relancer} » ? Elle pourra de nouveau ouvrir des positions. Ce choix sera inscrit au journal.`)) return;
+    try { await api("/api/strategies/resume", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ strategy: b.dataset.relancer }) }); }
+    catch (err) { alert(err.message); }
+    rendreEspace();
+  }));
+  if ($("graphique")) {
+    $("gEx").addEventListener("change", () => { choixGraphique = { ex: $("gEx").value, sym: null }; rendreEspace(); });
+    $("gSym").addEventListener("change", () => { choixGraphique.sym = $("gSym").value; dessinerGraphique(); });
+    $("gActualiser").addEventListener("click", () => rendreEspace());
+    dessinerGraphique();
+  }
+  const fa = $("formApprendre");
+  if (fa) fa.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    $("lLancer").disabled = true;
+    $("lEtat").textContent = "Téléchargement de 2 ans d'historique et essais en cours, jusqu'à quelques minutes…";
+    try { const p = await api("/api/learning/propose", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ strategy: $("lStrat").value }) });
+      $("lEtat").textContent = p.accepted ? "Réglage retenu : vous pouvez l'appliquer." : "Aucun réglage retenu : " + p.reasons.join(" ; ") + "."; }
+    catch (err) { $("lEtat").textContent = err.message; }
+    setTimeout(rendreEspace, 2500);
+  });
+  $("espace").querySelectorAll("[data-appliquer]").forEach((b) => b.addEventListener("click", async () => {
+    if (!confirm(`Appliquer le réglage ${b.dataset.appliquer} à « ${nomStrat(b.dataset.strat)} » ? Il sera utilisé dès le prochain cycle, inscrit au journal, et vous pourrez revenir en arrière.`)) return;
+    try { await api("/api/learning/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: b.dataset.appliquer }) }); } catch (err) { alert(err.message); }
+    rendreEspace();
+  }));
+  $("espace").querySelectorAll("[data-revenir]").forEach((b) => b.addEventListener("click", async () => {
+    if (!confirm(`Revenir au réglage précédent pour « ${nomStrat(b.dataset.revenir)} » ?`)) return;
+    try { await api("/api/learning/rollback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ strategy: b.dataset.revenir }) }); } catch (err) { alert(err.message); }
+    rendreEspace();
+  }));
+  const sc = $("lancerScenarios");
+  if (sc) sc.addEventListener("click", async () => {
+    sc.disabled = true; sc.textContent = "Scénarios en cours…";
+    try { await api("/api/scenarios", { method: "POST" }); } catch (err) { alert(err.message); }
+    rendreEspace();
+  });
+  const f = $("formAudit");
+  if (f && !f.dataset.pret) { f.dataset.pret = "1"; f.addEventListener("submit", (ev) => { ev.preventDefault(); chercherAudit(); }); }
+  const v = $("verifier");
+  if (v && !v.dataset.pret) v.dataset.pret = "1";
+  if (v && v.dataset.pret === "1") { v.dataset.pret = "2"; v.addEventListener("click", async () => {
+    $("resultatVerif").textContent = "Vérification…";
+    try {
+      const r = await api("/api/verify"), b = r.database;
+      $("resultatVerif").textContent = (r.intact ? `Journal intact : ${r.count} messages vérifiés.` : `Journal altéré à la ligne ${r.bad_line}.`)
+        + (b ? (b.consistent ? ` Base de données identique (${b.database} messages).` : ` Base différente : ${b.missing} manquant(s), ${b.altered} modifié(s), ${b.extra} en trop.`) : "");
+      $("resultatVerif").className = r.intact && (!b || b.consistent) ? "gain" : "perte";
+    } catch (err) { $("resultatVerif").textContent = err.message; }
+  }); }
+}
+
+const VUES = {
+  async agents() {
+    const lignes = etat.agents.map((a) => {
+      const env = evenements.filter((e) => e.source === a.name);
+      const d = env.map((e) => e.duration_ms).filter((x) => x != null);
+      return { a, n: env.length, refus: env.filter((e) => e.status === "rejected").length,
+        err: env.filter((e) => e.status === "error").length, lat: d.length ? d.reduce((x, y) => x + y, 0) / d.length : null,
+        dernier: env.length ? env[env.length - 1] : null };
+    });
+    const statut = { idle: "en attente", active: "au travail", error: "en erreur", stopped: "arrêté" };
+    return bloc("Agents", "Chaque agent a un rôle unique et ne peut émettre que ses propres types de messages. Les chiffres viennent du journal ; cliquez sur un nom pour voir l'agent sur la carte.",
+      tableau([
+        ["Agent", (l) => `<span class="avecVisage">${visage(l.a.name, 36)}<span><button class="lienfil" data-agent="${l.a.name}">${esc(l.a.label)}</button><small>${esc(l.a.role)}</small></span></span>`],
+        ["État", (l) => statut[l.a.status] || l.a.status],
+        ["Messages", (l) => l.n, true], ["Refus", (l) => l.refus, true], ["Erreurs", (l) => l.err, true],
+        ["Temps moyen", (l) => l.lat == null ? "–" : `${nb(l.lat, 1)} ms`, true],
+        ["Dernier message", (l) => l.dernier ? `${quand(l.dernier.ts)}<small>${esc(l.dernier.result)}</small>` : "aucun"],
+        ["Dépend de", (l) => (l.a.depends || []).map((n) => esc(labels[n] || n)).join(", ") || "–"],
+      ], lignes, "Aucun agent."));
+  },
+
+  async marches() {
+    const [scans, regimes, snaps] = await Promise.all([cherche({ type: "market.scan", limit: 10 }),
+      cherche({ type: "regime.detected", limit: 80 }), cherche({ type: "market.snapshot", limit: 80 })]);
+    const parScan = dernierPar(scans, (e) => e.payload.exchange);
+    const regime = new Map(dernierPar(regimes, (e) => e.symbol).map((e) => [e.symbol, e]));
+    const lignes = dernierPar(snaps, (e) => `${e.payload.exchange}|${e.symbol}`);
+    const permis = (e) => e ? Object.entries(e.payload.allowed || {}).filter(([, ok]) => ok).map(([n]) => nomStrat(n)).join(", ") || "aucune" : "–";
+    return bloc("Marchés suivis", "Dernière mesure de chaque paire suivie. Le régime est calculé avec des indicateurs chiffrés (moyennes, volatilité, volume), jamais par interprétation.",
+      tableau([
+        ["Paire", (e) => `<b>${esc(e.symbol)}</b><small>${esc(e.payload.exchange)}</small>`],
+        ["Dernière clôture", (e) => euro(e.payload.last_price), true],
+        ["Spread", (e) => pb(e.payload.spread_bps), true],
+        ["Âge des données", (e) => e.payload.data_age_s == null ? "–" : `${Math.round(e.payload.data_age_s / 60)} min`, true],
+        ["Régime", (e) => { const r = regime.get(e.symbol); return r ? esc(r.result.replace(/^Régime [^:]+: /, "")) : "–"; }],
+        ["Stratégies permises", (e) => permis(regime.get(e.symbol))],
+        ["Mesuré", (e) => `${quand(e.ts)}<small>${lienFil(e.correlation_id)}</small>`],
+      ], lignes, "Aucune mesure encore : le premier cycle n'a pas eu lieu."))
+      + parScan.map((sc) => bloc(`Scanner ${esc(sc.payload.exchange)}`, `${esc(sc.result)} Mesuré le ${quand(sc.ts)}.`,
+        tableau([
+          ["Paire", (c) => esc(c.symbol)], ["Volume 24 h", (c) => euro(c.quote_volume_24h), true],
+          ["Spread", (c) => pb(c.spread_bps), true], ["Profondeur achat ±0,5 %", (c) => euro(c.bid_depth_eur_0_5pct), true],
+          ["Profondeur vente ±0,5 %", (c) => euro(c.ask_depth_eur_0_5pct), true],
+        ], sc.payload.candidates || [], "Aucun candidat."))).join("");
+  },
+
+  async plateformes() {
+    const [ov, statuts, arb] = await Promise.all([api("/api/overview"), cherche({ type: "exchange.status", limit: 40 }), cherche({ type: "arbitrage.scan", limit: 1 })]);
+    const dernier = new Map(dernierPar(statuts, (e) => e.payload.exchange).map((e) => [e.payload.exchange, e]));
+    const circuit = { closed: "fermé (normal)", half_open: "un essai autorisé", open: "ouvert : appels suspendus" };
+    return bloc("Plateformes", "Chaque appel est limité à 20 s, réessayé deux fois en cas d'erreur réseau, et coupé pendant 5 min après 3 échecs d'affilée. Une plateforme suspendue n'arrête pas les autres.",
+      tableau([
+        ["Plateforme", (v) => `<b>${esc(v.exchange)}</b><small>frais ${nb(v.fee_rate * 100, 2)} %</small>`],
+        ["Dernier état", (v) => { const e = dernier.get(v.exchange); return e ? `${esc(e.result)}<small>${quand(e.ts)}</small>` : "–"; }],
+        ["Coupe-circuit", (v) => v.health ? circuit[v.health.circuit] || v.health.circuit : "–"],
+        ["Temps de réponse", (v) => v.health && v.health.latency_ms != null ? `${nb(v.health.latency_ms, 0)} ms` : "–", true],
+        ["Appels / erreurs", (v) => v.health ? `${v.health.calls} / ${v.health.errors}` : "–", true],
+        ["Limite de fréquence", (v) => v.health ? v.health.rate_limited : "–", true],
+        ["Dernière erreur", (v) => v.health && v.health.last_error ? esc(v.health.last_error) : "aucune"],
+      ], ov.venues, "Aucune plateforme."))
+      + await vueActualites()
+      + await vueCalendrier()
+      + bloc("Arbitrage entre plateformes", "Écarts mesurés pour 500 € après frais des deux côtés et glissement. Affiché et simulé seulement : aucun ordre et aucun transfert de cryptomonnaie.",
+        arb.length ? `<p class="meta">Mesuré le ${quand(arb[0].ts)}.</p>` + tableau([
+          ["Paire", (r) => esc(r.symbol)], ["Achat sur", (r) => esc(r.buy_on)], ["Vente sur", (r) => esc(r.sell_on)],
+          ["Écart brut", (r) => pb(r.gross_bps), true], ["Frais", (r) => pb(r.fees_bps), true], ["Net", (r) => pb(r.net_bps), true],
+          ["Verdict", (r) => r.exploitable ? "exploitable en simulation" : esc(r.reasons.join(" ; "))],
+        ], arb[0].payload.pairs, "Aucune paire commune.") : `<p class="vide2">Pas encore de mesure : il faut au moins deux plateformes et un tour de cycles.</p>`);
+  },
+
+  async trades() {
+    const [props, risques, execs] = await Promise.all([cherche({ type: "trade.proposal", limit: 100 }),
+      cherche({ type: "risk.decision", limit: 200 }), cherche({ type: "execution.", limit: 300 })]);
+    const decision = new Map(risques.map((e) => [e.payload.proposal_id, e]));
+    const suite = new Map(), vente = new Map();
+    for (const e of execs) {
+      const pid = e.payload.proposal_id;
+      if (!pid) continue;
+      if (e.type === "execution.fill" && e.payload.side === "sell") { if (!vente.has(pid)) vente.set(pid, e); }
+      else if (!suite.has(pid) || e.type === "execution.fill") suite.set(pid, e);
+    }
+    const issue = (p) => {
+      const pid = p.payload.proposal_id, d = decision.get(pid), x = suite.get(pid);
+      if (!d) return "sans décision du risque";
+      if (!d.payload.approved) return `<span class="perte">refusée</span><small>${esc(d.result)}</small>`;
+      if (!x) return "acceptée, pas d'exécution";
+      const t = { "execution.fill": "exécutée", "execution.order_placed": "ordre limite posé", "execution.expired": "ordre limite expiré", "execution.rejected": "rejetée à l'exécution", "execution.cancelled": "annulée" }[x.type] || x.type;
+      const v = vente.get(pid);
+      if (v) {
+        const r = v.payload.realized_pnl;
+        return `vendue <span class="${r >= 0 ? "gain" : "perte"}">${r >= 0 ? "+" : ""}${euro(r)}</span><small>achat ${euro(v.payload.entry_price)}, vente ${euro(v.payload.fill_price)} (${esc({ stop: "stop touché", exit_signal: "signal de sortie", emergency_flatten: "fermeture d'urgence" }[v.payload.reason] || v.payload.reason)}) ${lienFil(v.correlation_id, "voir la vente")}</small>`;
+      }
+      return `${t}${x.type === "execution.fill" ? ", position ouverte" : ""}<small>${esc(x.result)}</small>`;
+    };
+    return vueGraphique() + bloc("Trades", "Chaque proposition, de sa création à son issue. Cliquez sur « voir le parcours » pour rejouer toutes les étapes, agent par agent.",
+      tableau([
+        ["Quand", (p) => quand(p.ts)],
+        ["Paire", (p) => `<b>${esc(p.symbol)}</b><small>${esc(nomStrat(p.payload.strategy))}</small>`],
+        ["Entrée / stop / objectif", (p) => `${euro(p.payload.entry_price)} / ${euro(p.payload.stop_price)} / ${euro(p.payload.take_profit)}`, true],
+        ["Issue", issue], ["", (p) => lienFil(p.correlation_id)],
+      ], props, "Aucune proposition pour l'instant : aucun signal n'a passé le filtre de régime et l'analyse contradictoire."));
+  },
+
+  async execution() {
+    const [ov, plans, execs] = await Promise.all([api("/api/overview"), cherche({ type: "routing.plan", limit: 50 }), cherche({ type: "execution.", limit: 100 })]);
+    const attente = ov.venues.flatMap((v) => Object.values(v.pending).map((o) => ({ ...o, exchange: v.exchange })));
+    return bloc("Ordres en attente", "Ordres limite posés et pas encore exécutés. Leur montant est réservé ; ils expirent après une bougie et sont annulés en cas d'arrêt d'urgence.",
+      tableau([
+        ["Paire", (o) => `<b>${esc(o.symbol)}</b><small>${esc(o.exchange)}</small>`], ["Quantité", (o) => nb(o.quantity, 8), true],
+        ["Limite", (o) => euro(o.limit_price), true], ["Réservé", (o) => euro(o.reserved), true],
+        ["Expire", (o) => quand(new Date(o.expires_ms).toISOString())],
+      ], attente, "Aucun ordre en attente."))
+      + bloc("Choix d'exécution", "Pour chaque achat accepté : ordre au marché (immédiat, certain) ou ordre limite (moins cher, incertain), avec les coûts estimés.",
+        tableau([
+          ["Quand", (e) => quand(e.ts)], ["Paire", (e) => esc(e.symbol)],
+          ["Choix", (e) => `${e.payload.choice === "market" ? "marché" : "limite"}<small>${esc(e.payload.reason || "")}</small>`],
+          ["Coût marché", (e) => pb(e.payload.options.market.total_cost_bps), true], ["Coût limite", (e) => pb(e.payload.options.limit.total_cost_bps), true],
+          ["", (e) => lienFil(e.correlation_id)],
+        ], plans, "Aucun achat accepté pour l'instant."))
+      + bloc("Exécutions", "Ordres fictifs exécutés, rejetés, expirés ou annulés, avec le glissement réellement subi sur le carnet.",
+        tableau([
+          ["Quand", (e) => quand(e.ts)], ["Paire", (e) => esc(e.symbol || e.payload.symbol || "–")],
+          ["Événement", (e) => `${({ "execution.fill": e.payload.side === "sell" ? "vente" : "achat", "execution.order_placed": "ordre limite posé", "execution.expired": "expiré", "execution.rejected": "rejet", "execution.cancelled": "annulé" })[e.type] || e.type}<small>${esc(e.result)}</small>`],
+          ["Prix", (e) => euro(e.payload.fill_price), true], ["Glissement", (e) => pb(e.payload.slippage_bps), true],
+          ["Frais", (e) => euro(e.payload.fee), true], ["", (e) => lienFil(e.correlation_id)],
+        ], execs, "Aucune exécution pour l'instant."));
+  },
+
+  async portefeuille() {
+    const [ov, reel] = await Promise.all([api("/api/overview"), api("/api/holdings").catch(() => null)]);
+    return vueVraiPortefeuille(reel) + ov.venues.map((v) => bloc(`Portefeuille ${esc(v.exchange)}`,
+      `Argent fictif. Départ ${euro(v.start)}, capital ${euro(v.equity)} (${pct(v.start ? v.equity / v.start - 1 : null)}), cash ${euro(v.cash)} dont ${euro(v.reserved)} réservés pour des ordres en attente.`,
+      tableau([
+        ["Paire", ([s, p]) => `<b>${esc(s)}</b><small>${esc(nomStrat(p.strategy))}</small>`], ["Quantité", ([, p]) => nb(p.quantity, 8), true],
+        ["Entrée", ([, p]) => euro(p.entry_price), true], ["Dernier prix", ([, p]) => euro(p.mark_price), true], ["Stop", ([, p]) => euro(p.stop_price), true],
+        ["Latent", ([, p]) => { const v2 = p.quantity * (p.mark_price - p.entry_price) - (p.entry_fee || 0); return `<span class="${v2 >= 0 ? "gain" : "perte"}">${euro(v2)}</span>`; }, true],
+      ], Object.entries(v.positions), "Aucune position ouverte."))).join("");
+  },
+
+  async risque() {
+    const [ov, refus, contra, filtres] = await Promise.all([api("/api/overview"), cherche({ type: "risk.decision", status: "rejected", limit: 30 }),
+      cherche({ type: "adversarial.review", status: "rejected", limit: 30 }), cherche({ type: "strategy.no_signal", text: "écarté", limit: 30 })]);
+    const c = ov.config;
+    const jauges = ov.venues.map((v) => { const r = v.risk; return bloc(`Limites ${esc(v.exchange)}`, "", `<dl class="jauges">
+      ${jauge("Exposition", pc(r.exposure_pct), `sur ${pc(r.max_exposure_pct)} permis`, r.exposure_pct / r.max_exposure_pct)}
+      ${jauge("Réserve de cash", pc(r.cash_reserve_pct), `au moins ${pc(r.min_cash_reserve_pct)}`, null)}
+      ${jauge("Résultat du jour", euro(r.daily_pnl), `arrêt à ${euro(r.daily_limit)}`, r.daily_pnl < 0 ? r.daily_pnl / r.daily_limit : 0)}
+      ${jauge("Résultat de la semaine", euro(r.weekly_pnl), `arrêt à ${euro(r.weekly_limit)}`, r.weekly_pnl < 0 ? r.weekly_pnl / r.weekly_limit : 0)}
+      ${jauge("Positions et ordres", `${r.slots}`, `sur ${r.max_slots}`, r.slots / r.max_slots)}
+      ${jauge("Pertes d'affilée", `${r.consecutive_losses}`, `pause à ${r.max_consecutive_losses}`, r.consecutive_losses / r.max_consecutive_losses)}
+      ${jauge("Risque ouvert jusqu'aux stops", euro(r.open_risk), `${euro(r.risk_per_trade)} permis par trade, ${euro(r.max_correlated_risk)} pour des positions liées entre elles`, null)}
+    </dl>`); }).join("");
+    const pauses = Object.entries(ov.paused);
+    return bloc("Contrôle du risque", `Règles fixes, appliquées par un moteur sans intelligence artificielle ; en cas de doute, il refuse. Seulement Spot, sans levier, en ${c.allowed_quotes.join(", ")}. Ces règles ne se modifient que dans le fichier de configuration, jamais depuis la page ni par un agent.`, "")
+      + jauges
+      + bloc("Stratégies en pause", "Mises en pause par le Performance Analyst quand elles se dégradent. Seule une personne peut les relancer.",
+        tableau([["Stratégie", ([n]) => esc(nomStrat(n))], ["Depuis", ([, p]) => quand(p.since)], ["Raison", ([, p]) => esc(p.reason)],
+          ["", ([n]) => `<button class="btn" data-relancer="${esc(n)}">Relancer</button>`]], pauses, "Aucune stratégie en pause."))
+      + bloc("Derniers refus", "Ce qui a été arrêté, et par qui : le moteur de risque, l'analyse contradictoire ou le filtre (régime, pause).",
+        tableau([["Quand", (e) => quand(e.ts)], ["Par", (e) => esc(labels[e.source] || e.source)], ["Motif", (e) => esc(e.result)], ["", (e) => lienFil(e.correlation_id)]],
+          [...refus, ...contra, ...filtres].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 40), "Aucun refus enregistré."));
+  },
+
+  async performance() {
+    let r;
+    try { r = await api("/api/performance"); } catch (err) { return bloc("Performance", "", `<p class="vide2">${esc(err.message)}</p>`) + await vueApprentissage(); }
+    const st = Object.entries(r.strategies || {}), mk = Object.entries(r.markets || {});
+    return bloc("Performance nette", `Après frais et glissement, en argent fictif. Mesurée le ${quand(r.at)}. Un résultat positif sur peu de trades ne prouve rien.`,
+      tableau([
+        ["Plateforme", (x) => `<b>${esc(x.exchange)}</b>`], ["Capital", (x) => euro(x.equity), true], ["Rendement", (x) => pct(x.net_return), true],
+        ["Réalisé", (x) => euro(x.realized), true], ["Latent", (x) => euro(x.unrealized), true], ["Frais", (x) => euro(x.fees), true],
+        ["Glissement", (x) => euro(x.slippage), true], ["Trades", (x) => x.trades.trades, true],
+        ["Par trade", (x) => euro(x.trades.expectancy), true], ["Gains/pertes", (x) => nb(x.trades.profit_factor), true],
+        ["Sharpe", (x) => nb(x.curve.sharpe), true], ["Sortino", (x) => nb(x.curve.sortino), true], ["Perte max", (x) => pc(x.curve.max_drawdown), true],
+      ], r.exchanges, "Aucune plateforme."))
+      + bloc("Par stratégie", "Comparée à son espérance en backtest ; une dégradation met la stratégie en pause.",
+        tableau([["Stratégie", ([n]) => esc(nomStrat(n))], ["Trades", ([, s]) => s.trades, true], ["Par trade", ([, s]) => euro(s.expectancy), true],
+          ["Backtest", ([, s]) => euro(s.backtest_expectancy), true], ["Gains/pertes", ([, s]) => nb(s.profit_factor), true],
+          ["Dégradation", ([, s]) => s.degradation.length ? `<span class="perte">${esc(s.degradation.join(" ; "))}</span>` : "aucune"]], st, "Aucun trade clôturé pour l'instant."))
+      + bloc("Par marché", "", tableau([["Marché", ([n]) => esc(n)], ["Trades", ([, s]) => s.trades, true], ["Net", ([, s]) => euro(s.net), true],
+          ["Par trade", ([, s]) => euro(s.expectancy), true]], mk, "Aucun trade clôturé pour l'instant."))
+      + vueShadow(r) + await vueApprentissage();
+  },
+
+  async securite() {
+    const [ov, evts] = await Promise.all([api("/api/overview"), Promise.all(["security.", "anomaly.", "system.", "agent.error", "config."].map((t) => cherche({ type: t, limit: 20 })))]);
+    const liste = evts.flat().sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 50);
+    return bloc("Sécurité", ov.halted ? `<span class="perte">Système à l'arrêt : ${esc(ov.halt_reason)}</span>` : "Système en marche.",
+      `<dl class="jauges">
+        ${jauge("Mode", "papier uniquement", "aucun ordre réel possible dans cette version", null)}
+        ${jauge("Clés d'accès", "aucune", "seules les données publiques des plateformes sont lues", null)}
+        ${jauge("Enregistrement", ov.recording_ok ? "complet" : "<span class='perte'>en défaut</span>", ov.recording_ok ? "journal et base à jour" : "aucun achat tant que la base n'est pas rattrapée", null)}
+        ${jauge("Configuration", esc(ov.fingerprint || "–"), "empreinte inscrite au journal à chaque démarrage", null)}
+      </dl>
+      <p><button class="btn" id="verifier">Vérifier le journal et la base</button> <span id="resultatVerif"></span></p>
+      <p class="meta">Protections en place : droits d'émission propres à chaque agent ; refus définitif d'une proposition refusée ; propositions à usage unique et à durée limitée ; arrêt d'urgence conservé après redémarrage ; arrêt automatique après 5 cycles en erreur, plus de 300 messages par minute ou une anomalie critique ; coupe-circuit par plateforme.</p>`)
+      + bloc("Événements de sécurité", "Alertes, anomalies, arrêts, reprises, erreurs d'agents et chargements de configuration.",
+        tableau([["Quand", (e) => quand(e.ts)], ["Par", (e) => esc(labels[e.source] || e.source)], ["Événement", (e) => `<span class="${e.status === "ok" ? "" : "perte"}">${esc(e.result)}</span>`]],
+          liste, "Aucun événement de sécurité."))
+      + await vueScenarios();
+  },
+
+  async audit() {
+    const agents = etat.agents.map((a) => `<option value="${a.name}">${esc(a.label)}</option>`).join("");
+    return bloc("Journal d'audit", "Recherche dans tout l'historique enregistré en base. Chaque message garde l'empreinte du précédent : toute modification se voit dans l'espace Sécurité.",
+      `<form class="recherche" id="formAudit">
+        <label>Type<input type="text" id="aType" placeholder="ex. risk.decision" size="16"></label>
+        <label>Agent<select id="aAgent"><option value="">tous</option>${agents}</select></label>
+        <label>Paire<input type="text" id="aPaire" placeholder="ex. BTC/EUR" size="10"></label>
+        <label>Texte<input type="text" id="aTexte" placeholder="mot du message" size="16"></label>
+        <label>Depuis<input type="date" id="aDepuis"></label>
+        <label>Statut<select id="aStatut"><option value="">tous</option><option value="ok">normal</option><option value="rejected">refus</option><option value="error">erreur</option></select></label>
+        <button class="btn fort">Chercher</button>
+      </form><div id="resultatAudit"><p class="vide2">Lancez une recherche ; sans critère, les 200 derniers messages s'affichent.</p></div>`);
+  },
+
+  async config() {
+    const [ov, versions] = await Promise.all([api("/api/overview"), cherche({ type: "config.loaded", limit: 20 })]);
+    const groupes = [
+      ["Risque", /risk|loss|exposure|reserve|position|correlat|spread|slippage|quote|reward|proposal_ttl|adversarial|consecutive/],
+      ["Stratégies et évaluation", /strategy|regime|accept_|limit_|watchlist|scan/],
+      ["Plateformes et capital", /exchange|cash|fee|arbitrage|app_env/],
+      ["Notifications", /notify/],
+      ["Fichiers", /path|dir/],
+    ];
+    const reste = new Set(Object.keys(ov.config));
+    const blocs = groupes.map(([titre, re]) => {
+      const cles = [...reste].filter((k) => re.test(k)).sort();
+      cles.forEach((k) => reste.delete(k));
+      return [titre, cles];
+    });
+    if (reste.size) blocs.push(["Autres", [...reste].sort()]);
+    const val = (v) => Array.isArray(v) ? esc(v.join(", ")) || "aucun" : typeof v === "boolean" ? (v ? "oui" : "non") : esc(String(v));
+    return bloc("Configuration", `Lecture seule. Version ${esc(ov.fingerprint)}. Les paramètres se modifient dans le fichier .env, puis au redémarrage ; aucun agent et aucune page ne peut les changer. Les secrets ne sont jamais affichés.`, "")
+      + blocs.filter(([, k]) => k.length).map(([titre, cles]) => bloc(titre, "", tableau([["Paramètre", (k) => `<code>${esc(k)}</code>`], ["Valeur", (k) => val(ov.config[k])]], cles, ""))).join("")
+      + bloc("Versions chargées", "Chaque démarrage inscrit l'empreinte de la configuration au journal et signale les paramètres changés.",
+        tableau([["Quand", (e) => quand(e.ts)], ["Version", (e) => `<code>${esc(e.payload.fingerprint)}</code>`], ["Détail", (e) => esc(e.result)]], versions, "Aucune version enregistrée."));
+  },
+};
+
+function vueShadow(r) {
+  const sh = Object.entries(r.shadow || {});
+  const perf = new Map((r.exchanges || []).map((x) => [x.exchange, x]));
+  const lignes = sh.flatMap(([ex, d]) => Object.entries(d.by_blocker).map(([qui, g]) => ({ ex, qui, ...g })));
+  return bloc("Mode Shadow", "Ce qui se serait passé sans les protections : chaque signal écarté est suivi comme un trade fictif (stop, objectif à 2 R, frais déduits ; si une bougie touche les deux, on retient le stop). Total négatif = la protection a évité des pertes.",
+    tableau([["Plateforme", (x) => esc(x.ex)], ["Écarté par", (x) => esc(x.qui)], ["Signaux", (x) => x.signals, true],
+      ["Résolus", (x) => x.resolved, true], ["Gagnants", (x) => x.wins, true],
+      ["Total", (x) => x.resolved ? `<span class="${x.total_r < 0 ? "gain" : x.total_r > 0 ? "perte" : ""}">${nb(x.total_r, 1)} R</span>` : "–", true],
+      ["Verdict", (x) => x.resolved < 10 ? "trop tôt pour conclure (moins de 10 résolus)" : x.total_r < 0 ? "la protection a évité des pertes" : "la protection a coûté des gains"]],
+      lignes, "Aucun signal écarté pour l'instant."))
+    + bloc("Référence passive", "Acheter dès le départ les paires suivies, à parts égales, et ne plus rien faire. Jarvis n'est utile que s'il fait mieux, ajusté au risque.",
+      tableau([["Plateforme", ([ex]) => esc(ex)], ["Depuis", ([, d]) => d.reference ? quand(d.reference.since) : "–"],
+        ["Référence", ([, d]) => d.reference ? pct(d.reference.return) : "–", true],
+        ["Jarvis", ([ex]) => perf.has(ex) ? pct(perf.get(ex).net_return) : "–", true]],
+        sh, "Pas encore de référence."));
+}
+
+async function vueApprentissage() {
+  const d = await api("/api/learning");
+  const options = Object.entries((etat && etat.strategies) || {}).map(([n, l]) => `<option value="${n}">${esc(l)}</option>`).join("");
+  const actifs = Object.entries(d.active).filter(([, a]) => Object.keys(a.params || {}).length || (a.history || []).length);
+  return bloc("Apprentissage", "Le Learning Manager propose des réglages pour une stratégie (ses seuls paramètres, entre 50 % et 200 % de l'origine) et les teste à part : choix sur les deux premiers tiers de l'historique, verdict sur le dernier tiers jamais vu. Il n'applique rien : c'est votre décision, et vous pouvez revenir en arrière. Les règles de risque ne sont jamais concernées.",
+    `<form class="recherche" id="formApprendre"><label>Stratégie<select id="lStrat">${options}</select></label>
+      <button class="btn fort" id="lLancer"${d.busy ? " disabled" : ""}>Chercher un meilleur réglage</button><span id="lEtat" class="meta">${d.busy ? "Recherche en cours…" : ""}</span></form>`
+    + tableau([["Stratégie", ([n]) => esc(nomStrat(n))], ["Réglage actif", ([, a]) => esc(JSON.stringify(a.params || {}))],
+      ["Appliqué", ([, a]) => a.applied_at ? `${quand(a.applied_at)}<small>par ${esc(a.by)}</small>` : "–"],
+      ["", ([n, a]) => (a.history || []).length ? `<button class="btn" data-revenir="${esc(n)}">Revenir au précédent</button>` : ""]],
+      actifs, "Toutes les stratégies utilisent leur réglage d'origine.")
+    + tableau([["Créée", (v) => quand(v.created_at)], ["Stratégie", (v) => esc(nomStrat(v.strategy))],
+      ["Réglage", (v) => esc(JSON.stringify((v.best || {}).params || {}))],
+      ["Essais", (v) => `${v.tried}<small>${v.cumulative_trials ?? v.tried} au total sur 20 permis</small>`, true],
+      ["Contrôle (dernier tiers)", (v) => v.best && v.best.test ? `${euro(v.best.test.expectancy)} par trade<small>${v.best.test.trades} trades ; actuel ${euro(v.baseline.test.expectancy)}</small>` : "–"],
+      ["Verdict", (v) => v.accepted ? `<span class="gain">retenue</span>` : `non retenue<small>${esc(v.reasons.join(" ; "))}</small>`],
+      ["", (v) => v.accepted ? `<button class="btn" data-appliquer="${esc(v.id)}" data-strat="${esc(v.strategy)}">Appliquer</button>` : ""]],
+      d.versions, "Aucune proposition encore."));
+}
+
+async function vueActualites() {
+  const n = await api("/api/news");
+  if (!n.enabled) return bloc("Actualités", "", `<p class="vide2">Lecture des pages d'état désactivée dans la configuration.</p>`);
+  const items = Object.values(n.exchanges).flatMap((e) => (e.items || []).map((i) => i));
+  const erreurs = Object.values(n.exchanges).filter((e) => e.error).map((e) => `${e.exchange} : ${e.error}`);
+  const ordre = { bloquant: 0, "actif suivi": 1, trading: 2, autre: 3 };
+  items.sort((a, b) => ordre[a.relevance] - ordre[b.relevance]);
+  return bloc("Actualités vérifiées", "Incidents et maintenances publiés par les plateformes elles-mêmes (source officielle, donc vérifiée). Aucune interprétation par une IA : le système n'en utilise pas. Seul un incident officiel majeur, en cours, touchant le trading suspend la plateforme concernée.",
+    (erreurs.length ? `<p class="meta perte">${esc(erreurs.join(" ; "))}</p>` : "")
+    + tableau([["Plateforme", (i) => esc(i.exchange)], ["Avis", (i) => `${esc(i.title)}<small>${i.kind === "maintenance" ? "maintenance" : "incident"}, ${esc(i.status || "")}, impact ${esc(i.impact || "–")}</small>`],
+      ["Pertinence", (i) => i.relevance === "bloquant" ? `<span class="perte">bloquant</span>` : esc(i.relevance) + (i.assets.length ? `<small>${esc(i.assets.join(", "))}</small>` : "")],
+      ["Source", (i) => i.url ? `<a class="lienfil" href="${esc(i.url)}" target="_blank" rel="noopener">officielle</a>` : "officielle"],
+      ["Avis de l'IA", (i) => i.interpretation ? `${esc(i.interpretation.text)}<small>interprétation par IA (${esc(i.interpretation.model)}), non vérifiée</small>` : `<span class="vide2">${(etat.system.ai || {}).enabled ? "pas encore demandé" : "aucune IA branchée"}</span>`]],
+      items, "Aucun avis publié par les plateformes en ce moment."));
+}
+
+function vueVraiPortefeuille(r) {
+  const desc = "Vos vrais soldes, saisis à la main (aucun compte connecté, aucune clé, aucun ordre), valorisés avec les cours publics en euros. « Quantités au » : date de votre relevé ; « prix au » : date du cours. Un cours frais ne veut pas dire que le solde est à jour.";
+  if (!r) return bloc("Mon vrai portefeuille", desc, `<p class="meta perte">Valorisation indisponible pour l'instant.</p>`);
+  const total = !r.lines.length ? "" : r.complete ? `<p class="meta">Total : <b>${euro(r.total_eur)}</b></p>`
+    : `<p class="meta perte">Total partiel : ${euro(r.total_eur)}. ${r.missing} ligne(s) non valorisée(s) : ce n'est pas la valeur totale.</p>`;
+  return bloc("Mon vrai portefeuille", desc, total + tableau([
+    ["Plateforme", (l) => esc(l.exchange)], ["Actif", (l) => `<b>${esc(l.asset)}</b><small>quantités au ${esc(l.as_of)}</small>`],
+    ["Quantité", (l) => nb(l.quantity, 8), true],
+    ["Prix", (l) => l.price_eur == null ? "–" : `${euro(l.price_eur)}<small>prix au ${quand(new Date(l.price_ms).toISOString())}</small>`, true],
+    ["Valeur", (l) => l.value_eur == null ? `<span class="perte">valorisation indisponible</span>` : euro(l.value_eur), true]],
+    r.lines, "Aucun solde saisi. Dans le terminal : python -m trading_agent holdings set --exchange bitvavo --asset BTC --quantity 0.01"));
+}
+
+async function vueCalendrier() {
+  let c = null;
+  try { c = await api("/api/calendar"); } catch (e) { c = { error: "calendrier injoignable", upcoming: [] }; }
+  const desc = "Grandes annonces macro (Fed, BCE, inflation et emploi américains) des 7 prochains jours, recopiées depuis les pages officielles. Information seulement : le système n'en tient pas compte dans ses décisions.";
+  if (c.error) return bloc("Calendrier économique", desc, `<p class="meta perte">Calendrier inconnu : ${esc(c.error)}.</p>`);
+  const alerte = c.stale ? `<p class="meta perte">À mettre à jour : les dates ne vont que jusqu'au ${esc(c.covered_until)}.</p>` : `<p class="meta">Dates connues jusqu'au ${esc(c.covered_until)}.</p>`;
+  return bloc("Calendrier économique", desc, alerte + tableau([
+    ["Quand", (e) => `${quand(e.at)}<small>heure locale de l'annonce : ${esc(e.local)}</small>`],
+    ["Annonce", (e) => `${esc(e.name)}<small>${esc(e.zone)}</small>`],
+    ["Source", (e) => `<a class="lienfil" href="${esc(e.source)}" target="_blank" rel="noopener">officielle</a>`]],
+    c.upcoming, "Aucune grande annonce dans les 7 prochains jours."));
+}
+
+async function vueScenarios() {
+  let r = null;
+  try { r = await api("/api/scenarios"); } catch {}
+  return bloc("Scénarios extrêmes", "Les vrais agents face à une plateforme simulée (krach, panne, carnet vide, doublons…), dans un dossier temporaire : rien ne touche l'essai en cours, aucun appel réseau.",
+    `<p><button class="btn" id="lancerScenarios">Lancer les scénarios</button> <span class="meta">${r ? `Dernier passage le ${quand(r.at)} : ${r.passed} sur ${r.total} réussis.` : "Jamais lancés."}</span></p>`
+    + (r ? tableau([["Scénario", (x) => `<b>${esc(x.name)}</b><small>attendu : ${esc(x.expected)}</small>`],
+        ["Résultat", (x) => x.passed ? `<span class="gain">réussi</span>` : `<span class="perte">échec</span>`], ["Observé", (x) => esc(x.observed)]], r.results, "") : ""));
+}
+
+/* ---------- graphique de prix (lightweight-charts, Apache-2.0, fichier local) ---------- */
+let choixGraphique = null, graphique = null;
+function vueGraphique() {
+  const venues = (etat.system.venues || []);
+  if (!venues.length) return "";
+  const paires = (v) => [...new Set([...(v.watchlist || []), ...Object.keys(v.exchange === etat.system.exchange ? etat.portfolio.positions : {})])];
+  if (!choixGraphique || !venues.some((v) => v.exchange === choixGraphique.ex)) choixGraphique = { ex: venues[0].exchange, sym: paires(venues[0])[0] };
+  const v = venues.find((x) => x.exchange === choixGraphique.ex);
+  if (!paires(v).includes(choixGraphique.sym)) choixGraphique.sym = paires(v)[0];
+  return bloc("Graphique", "Bougies réelles de la plateforme. Flèche verte : achat simulé de Jarvis ; flèche rouge : vente, avec son résultat. Lignes : prix d'entrée et stop d'une position ouverte, prix limite d'un ordre en attente.",
+    `<form class="recherche" id="formGraphique">
+      <label>Plateforme<select id="gEx">${venues.map((x) => `<option ${x.exchange === choixGraphique.ex ? "selected" : ""}>${esc(x.exchange)}</option>`).join("")}</select></label>
+      <label>Paire<select id="gSym">${paires(v).map((p) => `<option ${p === choixGraphique.sym ? "selected" : ""}>${esc(p)}</option>`).join("")}</select></label>
+      <button class="btn" type="button" id="gActualiser">Actualiser</button><span class="meta" id="gEtat"></span></form>
+    <div id="graphique" class="graphique" role="img" aria-label="Graphique des prix et des trades de Jarvis"></div>`);
+}
+function chargerBibliothequeGraphique() {
+  if (window.LightweightCharts) return Promise.resolve();
+  return new Promise((ok, ko) => {
+    const sc = document.createElement("script");
+    sc.src = "/vendor/lightweight-charts.js"; sc.onload = ok; sc.onerror = () => ko(new Error("bibliothèque de graphiques introuvable"));
+    document.head.appendChild(sc);
+  });
+}
+async function dessinerGraphique() {
+  const zone = $("graphique");
+  if (!zone) return;
+  $("gEtat").textContent = "Chargement des bougies…";
+  try {
+    await chargerBibliothequeGraphique();
+    const d = await api(`/api/chart?exchange=${encodeURIComponent(choixGraphique.ex)}&symbol=${encodeURIComponent(choixGraphique.sym)}`);
+    if (graphique) { graphique.remove(); graphique = null; }
+    const L = window.LightweightCharts, css = getComputedStyle(document.documentElement);
+    const c = (n) => css.getPropertyValue(n).trim();
+    graphique = L.createChart(zone, {
+      autoSize: true,
+      layout: { background: { type: "solid", color: c("--fond") }, textColor: c("--doux"), fontFamily: "Instrument Sans, sans-serif" },
+      grid: { vertLines: { color: c("--plan") }, horzLines: { color: c("--plan") } },
+      rightPriceScale: { borderColor: c("--trait") }, timeScale: { borderColor: c("--trait"), timeVisible: d.timeframe !== "1d" },
+      localization: { priceFormatter: (x) => x.toLocaleString("fr-FR", { maximumSignificantDigits: 6 }) + " €" },
+    });
+    const serie = graphique.addSeries(L.CandlestickSeries, { upColor: c("--ok"), downColor: c("--non"), borderVisible: false, wickUpColor: c("--ok"), wickDownColor: c("--non") });
+    serie.setData(d.candles);
+    L.createSeriesMarkers(serie, d.markers.map((m) => m.side === "buy"
+      ? { time: m.time, position: "belowBar", shape: "arrowUp", color: c("--ok"), text: "Achat" }
+      : { time: m.time, position: "aboveBar", shape: "arrowDown", color: c("--non"), text: m.pnl == null ? "Vente" : `Vente ${m.pnl >= 0 ? "+" : ""}${eur(m.pnl)}` }));
+    if (d.position) {
+      serie.createPriceLine({ price: d.position.entry, color: c("--lampe"), lineStyle: 2, lineWidth: 1, title: "entrée" });
+      serie.createPriceLine({ price: d.position.stop, color: c("--non"), lineStyle: 2, lineWidth: 1, title: "stop" });
+    }
+    for (const o of d.pending) serie.createPriceLine({ price: o.limit, color: c("--doux"), lineStyle: 1, lineWidth: 1, title: "ordre limite" });
+    // Ajuster après la mise en page : avant, le graphique ne connaît pas encore sa largeur.
+    requestAnimationFrame(() => requestAnimationFrame(() => graphique && graphique.timeScale().fitContent()));
+    const n = d.markers.length;
+    $("gEtat").textContent = `${d.candles.length} bougies ${d.timeframe}, ${n ? `${n} exécution(s) de Jarvis` : "aucun trade de Jarvis sur cette paire pour l'instant"}${d.position ? ", position ouverte" : ""}.`;
+  } catch (err) { $("gEtat").textContent = err.message; }
+}
+
+async function chercherAudit() {
+  const params = { limit: 200 };
+  const champs = { type: "aType", source: "aAgent", symbol: "aPaire", text: "aTexte", status: "aStatut" };
+  for (const [k, id] of Object.entries(champs)) if ($(id).value.trim()) params[k] = $(id).value.trim();
+  if ($("aDepuis").value) params.since = $("aDepuis").value;
+  $("resultatAudit").innerHTML = `<p class="vide2">Recherche…</p>`;
+  try {
+    const r = await cherche(params);
+    $("resultatAudit").innerHTML = `<p class="meta">${r.length} message(s)${r.length === 200 ? ", les 200 plus récents" : ""}.</p>` + tableau([
+      ["Quand", (e) => quand(e.ts)], ["De", (e) => esc(labels[e.source] || e.source)], ["À", (e) => esc(labels[e.target] || e.target)],
+      ["Type", (e) => `<code>${esc(e.type)}</code>`], ["Message", (e) => `<span class="${e.status === "ok" ? "" : "perte"}">${esc(e.result)}</span>`],
+      ["", (e) => lienFil(e.correlation_id)],
+    ], r, "Aucun message ne correspond.");
+    brancherEspace();
+  } catch (err) { $("resultatAudit").innerHTML = `<p class="vide2">${esc(err.message)}</p>`; }
+}
+
+/* ---------- démarrage ---------- */
+(async () => {
+  await chargerEtat();
+  evenements = await (await fetch("/api/events")).json();
+  rendre(); majReplay();
+  const flux = new EventSource("/api/stream");
+  flux.onmessage = (m) => {
+    const e = JSON.parse(m.data);
+    evenements.push(e);
+    if (mode === "direct") {
+      // En direct : on suit le fil en cours et on l'anime.
+      if (e.correlation_id !== "manual" && vue.type === "fil") vue = { type: "fil", id: e.correlation_id };
+      rendre();
+      charger([e], true);
+    } else {
+      rendreListe();   // en investigation : on ne dérange pas la lecture en cours
+    }
+    if (["cycle.start", "cycle.end", "system.halt", "system.resume", "execution.fill"].includes(e.type)) chargerEtat();
+  };
+  chargerAlertes();
+  setInterval(() => {
+    chargerEtat(); chargerAlertes();
+    if (mode === "labo") chargerLabo();
+    if (mode === "espace" && AUTO.has(espaceCourant)) rendreEspace();
+  }, 5000);
+  setInterval(compteRebours, 1000);
+})();
+</script>
+</body>
+</html>

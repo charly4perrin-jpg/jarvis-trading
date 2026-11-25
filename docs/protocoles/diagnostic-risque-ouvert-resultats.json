@@ -1,0 +1,84 @@
+{
+ "seuils": {
+  "baisse_commune_panier": -0.0555,
+  "risque_eleve_eur": 54.63
+ },
+ "baisse_risque_eleve": {
+  "jours": 14,
+  "jours_avec_stop": 4,
+  "stops": 5,
+  "perte_stops": -76.89,
+  "grappes": 1
+ },
+ "baisse_risque_faible": {
+  "jours": 78,
+  "jours_avec_stop": 6,
+  "stops": 7,
+  "perte_stops": -135.36,
+  "grappes": 1
+ },
+ "sans_baisse_risque_eleve": {
+  "jours": 273,
+  "jours_avec_stop": 4,
+  "stops": 4,
+  "perte_stops": -68.72,
+  "grappes": 0
+ },
+ "tous_les_jours": {
+  "jours": 1823,
+  "jours_avec_stop": 24,
+  "stops": 26,
+  "perte_stops": -457.76,
+  "grappes": 2
+ },
+ "grappes": [
+  {
+   "day": "2022-11-08",
+   "panier": -0.1447,
+   "btc": -0.1027,
+   "risque_ouvert": 84.97,
+   "stops": [
+    [
+     "LINK/EUR",
+     -15.273793449398267
+    ],
+    [
+     "LTC/EUR",
+     -15.350406671321014
+    ]
+   ],
+   "baisse_commune": true
+  },
+  {
+   "day": "2025-10-10",
+   "panier": -0.1331,
+   "btc": -0.0641,
+   "risque_ouvert": 35.59,
+   "stops": [
+    [
+     "BTC/EUR",
+     -21.03743226857081
+    ],
+    [
+     "LTC/EUR",
+     -21.148221744827104
+    ]
+   ],
+   "baisse_commune": true
+  }
+ ],
+ "plafond_correle": {
+  "decisions": 155,
+  "refus": 52,
+  "reductions": 6,
+  "autres_refus": {
+   "Correlated risk limit reached.": 52,
+   "Maximum open positions reached.": 8
+  }
+ },
+ "portefeuille": {
+  "return": 0.4061904647413428,
+  "trades": 95,
+  "max_drawdown": 0.1387654403550731
+ }
+}
