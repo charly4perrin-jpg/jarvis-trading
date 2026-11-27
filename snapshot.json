@@ -1,0 +1,772 @@
+{
+ "genere_le": "2026-11-27T11:12:40+00:00",
+ "avertissement": "Projet personnel en argent fictif (paper trading). Aucun ordre réel. Pas un conseil en investissement.",
+ "dernier_evenement": "2026-11-27T00:01:35",
+ "journal": {
+  "evenements": 3983,
+  "empreinte_finale": "2aa290084ad55ca0"
+ },
+ "portefeuilles": [
+  {
+   "plateforme": "bitvavo",
+   "capital": 3000.0,
+   "depart": 3000.0,
+   "rendement_net": 0.0,
+   "frais": 0,
+   "trades": 0,
+   "gagnants": 0,
+   "perte_max": 0.0,
+   "sharpe": null
+  },
+  {
+   "plateforme": "kraken",
+   "capital": 1000.0,
+   "depart": 1000.0,
+   "rendement_net": 0.0,
+   "frais": 0,
+   "trades": 0,
+   "gagnants": 0,
+   "perte_max": 0.0,
+   "sharpe": null
+  }
+ ],
+ "shadow": "Performance nette : bitvavo 3 000,00 € (+0.00%), 0 trade(s), frais 0,00 € ; kraken 1 000,00 € (+0.00%), 0 trade(s), frais 0,00 €. Shadow : référence passive bitvavo -6.62% ; référence passive kraken -5.92%.",
+ "regimes": {
+  "BTC/EUR": {
+   "tendance": "sans tendance",
+   "volatilite": "normale",
+   "choc": false,
+   "le": "2026-11-26T00:15"
+  },
+  "XRP/EUR": {
+   "tendance": "baissier",
+   "volatilite": "normale",
+   "choc": false,
+   "le": "2026-11-25T00:18"
+  },
+  "ETH/EUR": {
+   "tendance": "sans tendance",
+   "volatilite": "normale",
+   "choc": false,
+   "le": "2026-11-26T00:15"
+  },
+  "SOL/EUR": {
+   "tendance": "sans tendance",
+   "volatilite": "normale",
+   "choc": false,
+   "le": "2026-11-26T00:15"
+  },
+  "HYPE/EUR": {
+   "tendance": "sans tendance",
+   "volatilite": "normale",
+   "choc": false,
+   "le": "2026-11-25T00:18"
+  },
+  "ADA/EUR": {
+   "tendance": "sans tendance",
+   "volatilite": "normale",
+   "choc": false,
+   "le": "2026-11-25T00:18"
+  },
+  "NEAR/EUR": {
+   "tendance": "haussier",
+   "volatilite": "normale",
+   "choc": false,
+   "le": "2026-11-25T00:18"
+  },
+  "SUI/EUR": {
+   "tendance": "sans tendance",
+   "volatilite": "normale",
+   "choc": false,
+   "le": "2026-11-23T10:09"
+  },
+  "TAO/EUR": {
+   "tendance": "sans tendance",
+   "volatilite": "normale",
+   "choc": false,
+   "le": "2026-11-21T00:00"
+  },
+  "PEPE/EUR": {
+   "tendance": "haussier",
+   "volatilite": "normale",
+   "choc": false,
+   "le": "2026-11-22T15:32"
+  },
+  "QNT/EUR": {
+   "tendance": "haussier",
+   "volatilite": "normale",
+   "choc": false,
+   "le": "2026-11-25T00:18"
+  }
+ },
+ "plateformes": {
+  "bitvavo": {
+   "etat": "down",
+   "latence_ms": 213.228,
+   "le": "2026-11-27T00:01"
+  },
+  "kraken": {
+   "etat": "down",
+   "latence_ms": 1204.3323,
+   "le": "2026-11-27T00:01"
+  }
+ },
+ "activite_24h": {
+  "Coordinateur": 24,
+  "Plateformes": 11,
+  "Audit": 11,
+  "Actualités": 2,
+  "Performance": 1,
+  "Apprentissage": 1
+ },
+ "semaine": {
+  "cycles": 206,
+  "signaux": 0,
+  "propositions": 0,
+  "executions": 0,
+  "arrets_urgence": 0,
+  "refus_par_agent": {}
+ },
+ "fil": [
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Régime",
+   "vers": "Stratégie",
+   "type": "regime.detected",
+   "etat": "ok",
+   "message": "Régime ADA/EUR : sans tendance nette, volatilité normale ; Markov : indéterminé."
+  },
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Stratégie",
+   "vers": "Coordinateur",
+   "type": "strategy.no_signal",
+   "etat": "ok",
+   "message": "Aucun signal (expansion de volume) : pas de bougie haussière à volume inhabituel."
+  },
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "ok",
+   "message": "Cycle terminé : aucun signal, aucun ordre."
+  },
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "ok",
+   "message": "bitvavo répond normalement, 165 ms en moyenne."
+  },
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Régime",
+   "vers": "Stratégie",
+   "type": "regime.detected",
+   "etat": "ok",
+   "message": "Régime NEAR/EUR : tendance haussière, volatilité normale ; Markov : indéterminé."
+  },
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Stratégie",
+   "vers": "Coordinateur",
+   "type": "strategy.no_signal",
+   "etat": "ok",
+   "message": "Aucun signal (expansion de volume) : pas de bougie haussière à volume inhabituel."
+  },
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "ok",
+   "message": "Cycle terminé : aucun signal, aucun ordre."
+  },
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "ok",
+   "message": "bitvavo répond normalement, 162 ms en moyenne."
+  },
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Régime",
+   "vers": "Stratégie",
+   "type": "regime.detected",
+   "etat": "ok",
+   "message": "Régime QNT/EUR : tendance haussière, volatilité normale ; Markov : indéterminé."
+  },
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Stratégie",
+   "vers": "Coordinateur",
+   "type": "strategy.no_signal",
+   "etat": "ok",
+   "message": "Aucun signal (expansion de volume) : pas de bougie haussière à volume inhabituel."
+  },
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "ok",
+   "message": "Cycle terminé : aucun signal, aucun ordre."
+  },
+  {
+   "le": "2026-11-25T00:18:58",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "ok",
+   "message": "kraken répond normalement, 1108 ms en moyenne."
+  },
+  {
+   "le": "2026-11-25T00:19:01",
+   "de": "Régime",
+   "vers": "Stratégie",
+   "type": "regime.detected",
+   "etat": "ok",
+   "message": "Régime BTC/EUR : sans tendance nette, volatilité normale ; Markov : indéterminé."
+  },
+  {
+   "le": "2026-11-25T00:19:01",
+   "de": "Stratégie",
+   "vers": "Coordinateur",
+   "type": "strategy.no_signal",
+   "etat": "ok",
+   "message": "Aucun signal (expansion de volume) : pas de bougie haussière à volume inhabituel."
+  },
+  {
+   "le": "2026-11-25T00:19:01",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "ok",
+   "message": "Cycle terminé : aucun signal, aucun ordre."
+  },
+  {
+   "le": "2026-11-25T00:19:01",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "ok",
+   "message": "kraken répond normalement, 1123 ms en moyenne."
+  },
+  {
+   "le": "2026-11-25T00:19:04",
+   "de": "Régime",
+   "vers": "Stratégie",
+   "type": "regime.detected",
+   "etat": "ok",
+   "message": "Régime ETH/EUR : sans tendance nette, volatilité normale ; Markov : indéterminé."
+  },
+  {
+   "le": "2026-11-25T00:19:04",
+   "de": "Stratégie",
+   "vers": "Coordinateur",
+   "type": "strategy.no_signal",
+   "etat": "ok",
+   "message": "Aucun signal (expansion de volume) : pas de bougie haussière à volume inhabituel."
+  },
+  {
+   "le": "2026-11-25T00:19:04",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "ok",
+   "message": "Cycle terminé : aucun signal, aucun ordre."
+  },
+  {
+   "le": "2026-11-25T00:19:04",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "ok",
+   "message": "kraken répond normalement, 1124 ms en moyenne."
+  },
+  {
+   "le": "2026-11-25T00:19:06",
+   "de": "Régime",
+   "vers": "Stratégie",
+   "type": "regime.detected",
+   "etat": "ok",
+   "message": "Régime SOL/EUR : sans tendance nette, volatilité normale ; Markov : indéterminé."
+  },
+  {
+   "le": "2026-11-25T00:19:06",
+   "de": "Stratégie",
+   "vers": "Coordinateur",
+   "type": "strategy.no_signal",
+   "etat": "ok",
+   "message": "Aucun signal (expansion de volume) : pas de bougie haussière à volume inhabituel."
+  },
+  {
+   "le": "2026-11-25T00:19:06",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "ok",
+   "message": "Cycle terminé : aucun signal, aucun ordre."
+  },
+  {
+   "le": "2026-11-25T00:19:06",
+   "de": "Performance",
+   "vers": "Coordinateur",
+   "type": "performance.report",
+   "etat": "ok",
+   "message": "Performance nette : bitvavo 3 000,00 € (+0.00%), 0 trade(s), frais 0,00 € ; kraken 1 000,00 € (+0.00%), 0 trade(s), frais 0,00 €. Shadow : référence passive bitvavo -6.62% ; référence passive kraken -6.75%."
+  },
+  {
+   "le": "2026-11-25T00:19:11",
+   "de": "Arbitrage",
+   "vers": "Coordinateur",
+   "type": "arbitrage.scan",
+   "etat": "ok",
+   "message": "Arbitrage (théorique, aucun transfert) : BTC/EUR : acheter sur kraken, vendre sur bitvavo, écart brut +0.2 pb, net -50.8 pb après frais — non exploitable (écart inférieur aux frais et au glissement) ; ETH/EUR : acheter sur bitvavo, vendre sur kraken, écart brut -0.1 pb, net -51.1"
+  },
+  {
+   "le": "2026-11-26T00:15:14",
+   "de": "Actualités",
+   "vers": "Plateformes",
+   "type": "news.update",
+   "etat": "ok",
+   "message": "Actualités vérifiées (pages d'état officielles) : bitvavo : Partial System Outage, 1 avis officiel(s), dont 1 concernant le trading ou un actif suivi — BLOQUANT : ACE deposits, withdrawals and trading are temporarily paused ; kraken : Partially Degraded Service, 15 avis officiel("
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : incident officiel en cours : ACE deposits, withdrawals and trading are temporarily paused. Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : incident officiel en cours : ACE deposits, withdrawals and trading are temporarily paused. Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : incident officiel en cours : ACE deposits, withdrawals and trading are temporarily paused. Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : incident officiel en cours : ACE deposits, withdrawals and trading are temporarily paused. Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : incident officiel en cours : ACE deposits, withdrawals and trading are temporarily paused. Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : incident officiel en cours : ACE deposits, withdrawals and trading are temporarily paused. Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : incident officiel en cours : ACE deposits, withdrawals and trading are temporarily paused. Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : incident officiel en cours : ACE deposits, withdrawals and trading are temporarily paused. Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-26T00:15:25",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-26T00:15:42",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "ok",
+   "message": "kraken répond normalement, 1157 ms en moyenne."
+  },
+  {
+   "le": "2026-11-26T00:15:44",
+   "de": "Régime",
+   "vers": "Stratégie",
+   "type": "regime.detected",
+   "etat": "ok",
+   "message": "Régime BTC/EUR : sans tendance nette, volatilité normale ; Markov : indéterminé."
+  },
+  {
+   "le": "2026-11-26T00:15:44",
+   "de": "Stratégie",
+   "vers": "Coordinateur",
+   "type": "strategy.no_signal",
+   "etat": "ok",
+   "message": "Aucun signal (expansion de volume) : pas de bougie haussière à volume inhabituel."
+  },
+  {
+   "le": "2026-11-26T00:15:44",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "ok",
+   "message": "Cycle terminé : aucun signal, aucun ordre."
+  },
+  {
+   "le": "2026-11-26T00:15:44",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "ok",
+   "message": "kraken répond normalement, 1160 ms en moyenne."
+  },
+  {
+   "le": "2026-11-26T00:15:47",
+   "de": "Régime",
+   "vers": "Stratégie",
+   "type": "regime.detected",
+   "etat": "ok",
+   "message": "Régime ETH/EUR : sans tendance nette, volatilité normale ; Markov : indéterminé."
+  },
+  {
+   "le": "2026-11-26T00:15:47",
+   "de": "Stratégie",
+   "vers": "Coordinateur",
+   "type": "strategy.no_signal",
+   "etat": "ok",
+   "message": "Aucun signal (expansion de volume) : pas de bougie haussière à volume inhabituel."
+  },
+  {
+   "le": "2026-11-26T00:15:47",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "ok",
+   "message": "Cycle terminé : aucun signal, aucun ordre."
+  },
+  {
+   "le": "2026-11-26T00:15:47",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "ok",
+   "message": "kraken répond normalement, 1182 ms en moyenne."
+  },
+  {
+   "le": "2026-11-26T00:15:49",
+   "de": "Régime",
+   "vers": "Stratégie",
+   "type": "regime.detected",
+   "etat": "ok",
+   "message": "Régime SOL/EUR : sans tendance nette, volatilité normale ; Markov : agité (sûr à 83%)."
+  },
+  {
+   "le": "2026-11-26T00:15:49",
+   "de": "Stratégie",
+   "vers": "Coordinateur",
+   "type": "strategy.no_signal",
+   "etat": "ok",
+   "message": "Aucun signal (expansion de volume) : pas de bougie haussière à volume inhabituel."
+  },
+  {
+   "le": "2026-11-26T00:15:49",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "ok",
+   "message": "Cycle terminé : aucun signal, aucun ordre."
+  },
+  {
+   "le": "2026-11-26T00:15:49",
+   "de": "Performance",
+   "vers": "Coordinateur",
+   "type": "performance.report",
+   "etat": "ok",
+   "message": "Performance nette : bitvavo 3 000,00 € (+0.00%), 0 trade(s), frais 0,00 € ; kraken 1 000,00 € (+0.00%), 0 trade(s), frais 0,00 €. Shadow : référence passive bitvavo -6.62% ; référence passive kraken -5.92%."
+  },
+  {
+   "le": "2026-11-26T00:15:54",
+   "de": "Arbitrage",
+   "vers": "Coordinateur",
+   "type": "arbitrage.scan",
+   "etat": "ok",
+   "message": "Arbitrage (théorique, aucun transfert) : BTC/EUR : acheter sur bitvavo, vendre sur kraken, écart brut -0.5 pb, net -51.5 pb après frais — non exploitable (écart inférieur aux frais et au glissement) ; ETH/EUR : acheter sur bitvavo, vendre sur kraken, écart brut +0.0 pb, net -51.0"
+  },
+  {
+   "le": "2026-11-27T00:01:24",
+   "de": "Actualités",
+   "vers": "Plateformes",
+   "type": "news.update",
+   "etat": "ok",
+   "message": "Actualités vérifiées (pages d'état officielles) : bitvavo : page d'état injoignable (URLError <urlopen error [Errno 8] nodename nor servname provided, or not known>) ; kraken : page d'état injoignable (URLError <urlopen error [Errno 8] nodename nor servname provided, or not known"
+  },
+  {
+   "le": "2026-11-27T00:01:24",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "ok",
+   "message": "bitvavo répond normalement, 213 ms en moyenne."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "error",
+   "message": "Cycle terminé : interrompu par une erreur de market_intelligence."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : coupe-circuit ouvert (ohlcv : ExchangeNotAvailable bitvavo GET https://api.bitvavo.com/v2/BTC-EUR/candles?interval=1d&limit=300). Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : coupe-circuit ouvert (ohlcv : ExchangeNotAvailable bitvavo GET https://api.bitvavo.com/v2/BTC-EUR/candles?interval=1d&limit=300). Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : coupe-circuit ouvert (ohlcv : ExchangeNotAvailable bitvavo GET https://api.bitvavo.com/v2/BTC-EUR/candles?interval=1d&limit=300). Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : coupe-circuit ouvert (ohlcv : ExchangeNotAvailable bitvavo GET https://api.bitvavo.com/v2/BTC-EUR/candles?interval=1d&limit=300). Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : coupe-circuit ouvert (ohlcv : ExchangeNotAvailable bitvavo GET https://api.bitvavo.com/v2/BTC-EUR/candles?interval=1d&limit=300). Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : coupe-circuit ouvert (ohlcv : ExchangeNotAvailable bitvavo GET https://api.bitvavo.com/v2/BTC-EUR/candles?interval=1d&limit=300). Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "bitvavo suspendue pour ce cycle : coupe-circuit ouvert (ohlcv : ExchangeNotAvailable bitvavo GET https://api.bitvavo.com/v2/BTC-EUR/candles?interval=1d&limit=300). Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, bitvavo indisponible."
+  },
+  {
+   "le": "2026-11-27T00:01:28",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "ok",
+   "message": "kraken répond normalement, 1204 ms en moyenne."
+  },
+  {
+   "le": "2026-11-27T00:01:34",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "error",
+   "message": "Cycle terminé : interrompu par une erreur de market_intelligence."
+  },
+  {
+   "le": "2026-11-27T00:01:34",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "kraken suspendue pour ce cycle : coupe-circuit ouvert (ohlcv : ExchangeNotAvailable kraken GET https://api.kraken.com/0/public/OHLC?pair=XXBTZEUR&interval=1440). Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-27T00:01:34",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, kraken indisponible."
+  },
+  {
+   "le": "2026-11-27T00:01:34",
+   "de": "Plateformes",
+   "vers": "Coordinateur",
+   "type": "exchange.status",
+   "etat": "rejected",
+   "message": "kraken suspendue pour ce cycle : coupe-circuit ouvert (ohlcv : ExchangeNotAvailable kraken GET https://api.kraken.com/0/public/OHLC?pair=XXBTZEUR&interval=1440). Les autres plateformes continuent."
+  },
+  {
+   "le": "2026-11-27T00:01:34",
+   "de": "Coordinateur",
+   "vers": "Audit",
+   "type": "cycle.end",
+   "etat": "rejected",
+   "message": "Cycle terminé : aucune opération, kraken indisponible."
+  },
+  {
+   "le": "2026-11-27T00:01:34",
+   "de": "Performance",
+   "vers": "Coordinateur",
+   "type": "performance.report",
+   "etat": "ok",
+   "message": "Performance nette : bitvavo 3 000,00 € (+0.00%), 0 trade(s), frais 0,00 € ; kraken 1 000,00 € (+0.00%), 0 trade(s), frais 0,00 €. Shadow : référence passive bitvavo -6.62% ; référence passive kraken -5.92%."
+  }
+ ]
+}

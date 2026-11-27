@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jarvis, démo rejouée</title>
+<meta name="description" content="Jarvis : des agents logiciels qui tradent la crypto en argent fictif. Regardez-les refuser, acheter, couper une perte et prendre un gain, en 35 secondes.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#f4f6f8;--panel:#fff;--fg:#141b24;--muted:#5c6776;--line:#dde2e8;--accent:#0a6b72;--accent-soft:#e2f0f0;--up:#1d7a46;--down:#b4392f;--warn:#9a5a00;--warn-soft:#fbf0dc;
+--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#0f141a;--panel:#151c24;--fg:#e3e8ee;--muted:#93a0af;--line:#25303b;--accent:#4dbec4;--accent-soft:#143338;--up:#5cc58a;--down:#ec7d72;--warn:#e7b25a;--warn-soft:#382a12;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 var(--sans)}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 16px 56px}
+header{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end;justify-content:space-between}
+h1{font-size:32px;font-weight:600;margin:0;letter-spacing:-.01em;line-height:1.2}
+.sub{color:var(--muted);margin:6px 0 0;max-width:60ch}
+.btn{font:600 15px var(--sans);border:0;border-radius:8px;padding:10px 18px;background:var(--accent);color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
+@media (prefers-color-scheme:dark){.btn{color:#0f141a}}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.warn{margin:16px 0 0;background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:8px 12px;font-size:13.5px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.c8{grid-column:span 8}.c4{grid-column:span 4}.side{display:flex;flex-direction:column;gap:16px;min-width:0}.c12{grid-column:span 12}
+@media(max-width:860px){.c8,.c4{grid-column:span 12}}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin:0 0 10px}
+svg{display:block;width:100%;height:auto}
+.axis{stroke:var(--line)}.lbl{fill:var(--muted);font:11px var(--mono)}
+.price{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.stop{stroke:var(--down);stroke-dasharray:5 5;stroke-width:1.5;opacity:0;transition:opacity .4s}
+.stop.on{opacity:.9}.stopl{fill:var(--down);font:11px var(--mono);opacity:0;transition:opacity .4s}.stopl.on{opacity:1}
+.mk{opacity:0;transition:opacity .35s}.mk.on{opacity:1}
+.mk text{font:600 12px var(--sans)}
+.cap{display:none;margin:8px 0 0;font-size:14px;min-height:3em}.cap b{color:var(--accent)}
+@media(max-width:860px){.cap{display:block}}
+.note{color:var(--muted);font-size:12.5px;margin:8px 0 0}
+.money .n{font:500 28px var(--mono);font-variant-numeric:tabular-nums}
+.money .l{color:var(--muted);font-size:13px}
+.money .r{font:500 19px var(--mono);font-variant-numeric:tabular-nums;margin-top:8px}
+.up{color:var(--up)}.down{color:var(--down)}.k{color:var(--muted)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+@media(max-width:860px){.steps{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.steps{grid-template-columns:1fr}}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;opacity:.45;transition:opacity .4s,border-color .4s,transform .4s}
+.step.on{opacity:1}.step.now{border-color:var(--accent);transform:translateY(-2px)}
+.step b{display:block;font-size:14.5px;margin-bottom:2px}
+.step span{font-size:13.5px;color:var(--muted)}
+.feed{display:flex;flex-direction:column;gap:8px;min-height:250px;font-size:13.5px}
+.msg{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;padding:9px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line);animation:in .35s ease-out}
+.msg .who{font-weight:600;font-size:13px;white-space:nowrap}.msg .who small{font-weight:400;color:var(--muted)}
+.msg p{grid-column:1/-1;margin:0;overflow-wrap:anywhere}
+.msg.no{border-color:var(--down)}.msg.no .who{color:var(--down)}
+.msg.yes{border-color:var(--up)}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.end{display:none;margin-top:16px}.end.on{display:block;animation:in .5s ease-out}
+.end p{margin:6px 0}.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+footer{margin-top:28px;color:var(--muted);font-size:12.5px}
+a{color:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div>
+  <h1>Jarvis : un robot de trading crypto<br>qui sait dire non.</h1>
+  <p class="sub">Des agents logiciels analysent le marché, se contredisent, puis un moteur de risque à règles fixes a le dernier mot. Regardez-les décider en 35 secondes. Tout est en argent fictif.</p>
+ </div>
+ <button class="btn" id="replay">▶ Rejouer</button>
+</header>
+<p class="warn">Démo en argent fictif, sur un marché imaginaire aux prix préparés à l'avance. Les décisions sont prises par le vrai code de Jarvis. Aucun ordre réel. Ce n'est pas un conseil en investissement.</p>
+
+<div class="grid">
+ <section class="card c8">
+  <h2>Prix d'une crypto imaginaire</h2>
+  <svg id="chart" viewBox="0 0 800 400" role="img" aria-label="Courbe de prix de la démo avec les achats, ventes et le stop"></svg>
+  <p class="cap" id="cap" aria-live="polite"></p>
+  <p class="note">Échelle de temps raccourcie : une bougie par minute dans la démo.</p>
+ </section>
+ <div class="c4 side">
+  <section class="card money">
+   <h2>Argent fictif</h2>
+   <div class="l">Cash disponible</div>
+   <div class="n" id="cash">3 000,00 €</div>
+   <div class="l" id="pos">Aucune position</div>
+   <div class="r" id="pnl">Résultat : 0,00 €</div>
+  </section>
+  <section class="card"><h2>Les agents se parlent</h2><div id="feed" class="feed"></div></section>
+ </div>
+</div>
+
+<div class="steps">
+ <div class="step" id="s1"><b>① Refus</b><span>Signal d'achat, mais carnet d'ordres vieux d'1 h : le risque dit non.</span></div>
+ <div class="step" id="s2"><b>② Achat</b><span>Données fraîches : achat de 0,47 BTC à 130,05 €, stop à 99 €.</span></div>
+ <div class="step" id="s3"><b>③ Krach</b><span>Le prix saute sous le stop : vente à 91,91 €, −18,25 €.</span></div>
+ <div class="step" id="s4"><b>④ Gain</b><span>Achat à 100,05 €, sommet 121 €, vente à 104,95 € : +5,61 €.</span></div>
+</div>
+
+
+<section class="card end" id="end">
+ <h2>Bilan</h2>
+ <p><b>3 000,00 € → 2 987,36 € (−12,64 €)</b> : un refus, un trade perdant, un trade gagnant.</p>
+ <p class="k">Jarvis ne promet pas de gagner. La perte du krach (18,25 €) dépasse même les 15 € prévus : un trou de prix sous le stop coûte plus cher, et la démo le montre tel quel. Ce qu'il montre, c'est comment chaque décision est prise, refusée et journalisée.</p>
+ <div class="links">
+  <a class="btn" href="https://github.com/charly4perrin-jpg/jarvis-trading" rel="noopener">Voir le code et l'installer</a>
+  <a class="btn ghost" href="live.html">Voir l'essai en direct</a>
+ </div>
+</section>
+
+<footer>Projet personnel open source (Apache-2.0). Démo reproductible sur votre Mac : <code>python -m trading_agent demo</code>.</footer>
+</div>
+<script>
+// Scénario de trading_agent/demo_run.py (chiffres identiques à la sortie de la démo), temps compressé.
+const P=[...Array(8).fill(100),130,90,...Array(8).fill(90),100,103,106,109,112,115,118,120,121,121,120,118.5,117,115.5,114,112.5,111,109.5,108,106.5,105];
+const W=800,H=400,L=46,R=14,T=16,B=26,lo=80,hi=135;
+const X=i=>L+i*(W-L-R)/(P.length-1),Y=v=>T+(hi-v)*(H-T-B)/(hi-lo);
+const $=s=>document.querySelector(s),svg=$("#chart"),NS="http://www.w3.org/2000/svg";
+const el=(t,a,txt)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt)e.textContent=txt;svg.appendChild(e);return e};
+const eur=n=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
+const sgn=n=>(n>0?"+":n<0?"−":"")+eur(Math.abs(n));
+let run=0,line,stop,stopl,marks={};
+function draw(){
+ svg.innerHTML="";
+ for(const v of [90,100,110,120,130]){el("line",{x1:L,x2:W-R,y1:Y(v),y2:Y(v),class:"axis"});el("text",{x:L-8,y:Y(v)+4,"text-anchor":"end",class:"lbl"},v+" €")}
+ stop=el("line",{x1:L,x2:W-R,y1:0,y2:0,class:"stop"});stopl=el("text",{x:W-R,y:0,"text-anchor":"end",class:"stopl"},"");
+ line=el("polyline",{class:"price",points:""});
+ const mk=(id,i,v,txt,col,dy,a="middle")=>{const g=el("g",{class:"mk"});g.innerHTML=`<circle cx="${X(i)}" cy="${Y(v)}" r="6" fill="${col}"/><text x="${X(i)}" y="${Y(v)+dy}" text-anchor="${a}" fill="${col}">${txt}</text>`;marks[id]=g};
+ mk("no",8,130,"✗ refusé","var(--down)",-12);mk("buy1",8,130,"▲ achat 130,05 €","var(--up)",-12);
+ mk("crash",9,90,"▼ stop 91,91 €","var(--down)",22);mk("buy2",18,100,"▲ achat 100,05 €","var(--up)",22);
+ mk("sell",38,105,"▼ vente 104,95 €","var(--accent)",22,"end");mk("peak",26,121,"sommet 121 €","var(--muted)",-12);
+}
+const show=(n)=>line.setAttribute("points",P.slice(0,n).map((v,i)=>X(i)+","+Y(v)).join(" "));
+const setStop=v=>{if(v==null){stop.classList.remove("on");stopl.classList.remove("on");return}stop.setAttribute("y1",Y(v));stop.setAttribute("y2",Y(v));stopl.setAttribute("y",Y(v)-5);stopl.textContent="stop "+v+" €";stop.classList.add("on");stopl.classList.add("on")};
+const mark=(...ids)=>ids.forEach(i=>marks[i].classList.add("on")),unmark=(...ids)=>ids.forEach(i=>marks[i].classList.remove("on"));
+function step(n){for(let i=1;i<=4;i++){const s=$("#s"+i);s.classList.toggle("on",i<=n);s.classList.toggle("now",i===n)}}
+function money(cash,pos,pnl){$("#cash").textContent=eur(cash);$("#pos").textContent=pos;const p=$("#pnl");p.textContent="Résultat : "+sgn(pnl);p.className="r "+(pnl>0?"up":pnl<0?"down":"")}
+function say(who,to,txt,cls=""){const f=$("#feed"),m=document.createElement("div");m.className="msg "+cls;m.innerHTML=`<span class="who">${who} <small>→ ${to}</small></span><p>${txt}</p>`;f.prepend(m);$("#cap").innerHTML=`<b>${who} :</b> ${txt}`;while(f.children.length>3)f.lastChild.remove()}
+async function play(){
+ const id=++run,fast=matchMedia("(prefers-reduced-motion: reduce)").matches;
+ const wait=ms=>new Promise((ok,ko)=>setTimeout(()=>id===run?ok():ko(),fast?0:ms));
+ const grow=async(a,b,ms)=>{for(let n=a;n<=b;n++){show(n);await wait(ms)}};
+ draw();$("#feed").innerHTML="";$("#cap").textContent="";$("#end").classList.remove("on");step(0);setStop(null);money(3000,"Aucune position",0);
+ try{
+  await grow(1,9,180);step(1);
+  say("Stratégie","Proposition","Signal d'achat sur BTC/EUR à 130,00 €, confiance 70 %.");await wait(1500);
+  say("Contradicteur","Proposition","Aucune objection majeure. Attention : marché suracheté, risque de repli.");await wait(1700);
+  say("Proposition","Risque","Acheter à 130,00 €, stop 99,00 €.");await wait(1400);
+  say("Risque","Coordinateur","✗ Refusé : carnet d'ordres périmé (il date d'une heure). On n'achète pas à l'aveugle.","no");mark("no");await wait(2600);
+  unmark("no");step(2);
+  say("Marché","Contradicteur","Données fraîches : meilleure vente à 130,05 €.");await wait(1400);
+  say("Risque","Exécution","✓ Accepté : achat de 0,47167471 BTC, perte maximale prévue 15 € (0,5 % du capital).","yes");await wait(1500);
+  say("Exécution","Portefeuille","Achat simulé à 130,05 €, frais 0,15 €.");mark("buy1");setStop(99);money(2938.51,"Position : 0,47 BTC",0);await wait(2400);
+  step(3);await grow(10,10,0);await wait(700);
+  say("Exécution","Portefeuille","Krach : le prix ouvre à 92 €, sous le stop. Vente simulée à 91,91 € (le prix réellement disponible, pas 99 €), frais 0,11 €.","no");
+  mark("crash");setStop(null);money(2981.75,"Aucune position",-18.25);await wait(3200);
+  step(4);await grow(11,19,170);
+  say("Stratégie","Proposition","Nouveau signal d'achat à 100,00 €.");await wait(1200);
+  say("Risque","Exécution","✓ Accepté : achat de 1,27845501 BTC, stop 89,00 €.","yes");
+  mark("buy2");setStop(89);money(2853.52,"Position : 1,28 BTC",-18.25);await wait(1600);
+  await grow(20,27,230);mark("peak");await grow(28,39,230);
+  say("Stratégie","Exécution","Signal de sortie : la tendance s'essouffle.");await wait(1100);
+  say("Exécution","Portefeuille","Vente simulée à 104,95 €, frais 0,34 €, résultat +5,61 €.","yes");
+  mark("sell");setStop(null);money(2987.36,"Aucune position",-12.64);await wait(1800);
+  say("Audit","Coordinateur","Chaque message est enregistré dans un journal chaîné, vérifiable après coup.");
+  $("#end").classList.add("on");
+ }catch(e){}
+}
+$("#replay").onclick=play;play();
+</script>
+</body>
+</html>
